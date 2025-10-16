@@ -1,4 +1,4 @@
-package org.example.projetos.domain;
+package org.cesar.br.example.projetos.domain;
 public class Pessoa {
     private String nome;
     private int idade;

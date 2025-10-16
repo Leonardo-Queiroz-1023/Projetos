@@ -1,4 +1,4 @@
-package org.example.projetos.domain;
+package org.cesar.br.example.projetos.domain;
 
 import java.time.LocalDateTime;
 import java.util.List;

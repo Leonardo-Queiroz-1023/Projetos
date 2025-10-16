@@ -1,4 +1,4 @@
-package org.example.projetos;
+package org.cesar.br.example.projetos;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
