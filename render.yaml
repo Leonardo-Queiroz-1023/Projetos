@@ -1,0 +1,21 @@
+services:
+  # Define o serviço web principal (sua aplicação Spring Boot)
+  - type: web
+    name: meu-projeto-final
+    env: java
+    plan: free
+
+    # Diretório raiz a partir do qual os comandos serão executados.
+    root: Backend
+
+    # Comando para construir a aplicação.
+    buildCommand: "./mvnw package -DskipTests"
+
+    # Comando para iniciar a aplicação após a build.
+    startCommand: "java -jar target/*.jar"
+
+    # Variáveis de ambiente
+    # Garante que o Render use a versão correta do Java.
+    envVars:
+      - key: JAVA_VERSION
+        value: 21
