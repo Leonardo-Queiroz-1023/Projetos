@@ -4,23 +4,19 @@ services:
     plan: free
     
     buildCommand: |
-      # Instalar Java 21 se necessário
       cd Backend
       chmod +x ./mvnw
-      # Build do Frontend
       cd ../Frontend
       npm ci
       npm run build
-      # Copiar build do Frontend para o Backend
       cd ../Backend
       rm -rf src/main/resources/static
       mkdir -p src/main/resources/static
       cp -r ../Frontend/dist/* src/main/resources/static/
-      # Build do Backend
       ./mvnw clean package -DskipTests
-    
-    startCommand: "java -Dserver.port=$PORT -jar Backend/target/*.jar"
-    
-    env:
+
+    startCommand: java -Dserver.port=$PORT -jar Backend/target/*.jar
+
+    envVars:
       - key: JAVA_VERSION
         value: 21
