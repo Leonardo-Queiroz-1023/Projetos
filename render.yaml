@@ -1,21 +1,31 @@
+# "Blueprint" do Render para a aplicação Full-Stack SpringBoot + React
+
 services:
-  # Define o serviço web principal (sua aplicação Spring Boot)
   - type: web
     name: meu-projeto-final
     env: java
     plan: free
 
-    # Diretório raiz a partir do qual os comandos serão executados.
-    root: Backend
+    # Diretório raiz onde os comandos de build/start serão executados.
+    rootDir: Backend
+
+    # Define a ordem das builds.
+    buildFilter:
+      paths:
+        - "Backend/**"
+        - "Frontend/**"
 
     # Comando para construir a aplicação.
-    buildCommand: "./mvnw package -DskipTests"
+    buildCommand: |
+      cd ../Frontend && npm install
+      npm run build
+      rm -rf ../Backend/src/main/resources/static
+      cp -r dist ../Backend/src/main/resources/static
+      cd ../Backend && ./mvnw package -DskipTests
 
-    # Comando para iniciar a aplicação após a build.
+    # Comando para iniciar a aplicação.
     startCommand: "java -jar target/*.jar"
 
-    # Variáveis de ambiente
-    # Garante que o Render use a versão correta do Java.
     envVars:
       - key: JAVA_VERSION
         value: 21
