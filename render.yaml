@@ -23,4 +23,4 @@ services:
     
     env:
       - key: JAVA_VERSION
-        value: "21"
+        value: 21
