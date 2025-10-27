@@ -1,29 +1,26 @@
-# "Blueprint" do Render para a aplicação Full-Stack SpringBoot + React
+# "Blueprint" final para a aplicação Full-Stack SpringBoot + React
 
 services:
   - type: web
     name: meu-projeto-final
     plan: free
-    runtime: java
+    # CORREÇÃO 1: A sintaxe correta para o ambiente Java.
+    env: java
 
-    # Diretório raiz onde os comandos de build/start serão executados.
+    # Diretório raiz onde os comandos serão executados.
     rootDir: Backend
 
-
-    # Comando para construir a aplicação.
+    # CORREÇÃO 2: O comando de build robusto para evitar erros de permissão e organizar os passos.
     buildCommand: |
-      cd ../Frontend
-      npm install
-      npm run build
-      rm -rf ../Backend/src/main/resources/static
-      mkdir -p ../Backend/src/main/resources/static
-      cp -r dist/* ../Backend/src/main/resources/static
+      chmod +x ./mvnw
+      cd ../Frontend && npm install && npm run build
       cd ../Backend
+      rm -rf ./src/main/resources/static
+      cp -r ../Frontend/dist ./src/main/resources/static
       ./mvnw package -DskipTests
 
-
     # Comando para iniciar a aplicação.
-    startCommand: java -jar target/*.jar
+    startCommand: "java -jar target/*.jar"
 
     envVars:
       - key: JAVA_VERSION
