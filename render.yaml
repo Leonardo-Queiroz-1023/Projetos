@@ -3,28 +3,26 @@
 services:
   - type: web
     name: meu-projeto-final
-    env: java
     plan: free
 
     # Diretório raiz onde os comandos de build/start serão executados.
     rootDir: Backend
 
-    # Define a ordem das builds.
-    buildFilter:
-      paths:
-        - "Backend/**"
-        - "Frontend/**"
 
     # Comando para construir a aplicação.
     buildCommand: |
-      cd ../Frontend && npm install
+      cd ../Frontend
+      npm install
       npm run build
       rm -rf ../Backend/src/main/resources/static
-      cp -r dist ../Backend/src/main/resources/static
-      cd ../Backend && ./mvnw package -DskipTests
+      mkdir -p ../Backend/src/main/resources/static
+      cp -r dist/* ../Backend/src/main/resources/static
+      cd ../Backend
+      ./mvnw package -DskipTests
+
 
     # Comando para iniciar a aplicação.
-    startCommand: "java -jar target/*.jar"
+    startCommand: java -jar target/*.jar
 
     envVars:
       - key: JAVA_VERSION
