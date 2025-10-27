@@ -1,27 +1,26 @@
-# "Blueprint" final para a aplicação Full-Stack SpringBoot + React
-
 services:
   - type: web
     name: meu-projeto-final
     plan: free
-    # CORREÇÃO 1: A sintaxe correta para o ambiente Java.
-    env: java
-
-    # Diretório raiz onde os comandos serão executados.
-    rootDir: Backend
-
-    # CORREÇÃO 2: O comando de build robusto para evitar erros de permissão e organizar os passos.
+    
     buildCommand: |
+      # Instalar Java 21 se necessário
+      cd Backend
       chmod +x ./mvnw
-      cd ../Frontend && npm install && npm run build
+      # Build do Frontend
+      cd ../Frontend
+      npm ci
+      npm run build
+      # Copiar build do Frontend para o Backend
       cd ../Backend
-      rm -rf ./src/main/resources/static
-      cp -r ../Frontend/dist ./src/main/resources/static
-      ./mvnw package -DskipTests
-
-    # Comando para iniciar a aplicação.
-    startCommand: "java -jar target/*.jar"
-
-    envVars:
+      rm -rf src/main/resources/static
+      mkdir -p src/main/resources/static
+      cp -r ../Frontend/dist/* src/main/resources/static/
+      # Build do Backend
+      ./mvnw clean package -DskipTests
+    
+    startCommand: "java -Dserver.port=$PORT -jar Backend/target/*.jar"
+    
+    env:
       - key: JAVA_VERSION
-        value: 21
+        value: "21"
