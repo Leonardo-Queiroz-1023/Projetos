@@ -4,7 +4,7 @@ services:
   - type: web
     name: meu-projeto-final
     plan: free
-    runtime: docker
+    runtime: image
 
     # Diretório raiz onde os comandos de build/start serão executados.
     rootDir: Backend
