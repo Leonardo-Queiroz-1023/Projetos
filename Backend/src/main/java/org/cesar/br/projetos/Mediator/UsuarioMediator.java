@@ -41,7 +41,7 @@ public class UsuarioMediator {
 		return usuarioD.buscarUsuarioNome(nome);
 	}
 
-    public boolean autenticar (String nome, String senha) {
+    public boolean autenticarSenha (String nome, String senha) {
         if(nome == null || nome.trim().isEmpty()) {
             return false;
         }
