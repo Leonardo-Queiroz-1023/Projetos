@@ -40,18 +40,24 @@ public class UsuarioMediator {
 		}
 		return usuarioD.buscarUsuarioNome(nome);
 	}
-	
-	public boolean autenticar (String nome, String senha) { // sistema de senhas
-		if(nome == null || nome.trim().isEmpty() || nome.trim().equals(nome) == false) {
-			return false;
-		}
-		
-		Usuario usuario = usuarioD.buscarUsuarioNome(nome);
-		
-		if(usuario.getNome().equals(senha) == false) {
-			return false;
-		}
-		
-		return true;
-	}
+
+    public boolean autenticar (String nome, String senha) {
+        if(nome == null || nome.trim().isEmpty()) {
+            return false;
+        }
+
+        Usuario usuario = usuarioD.buscarUsuarioNome(nome);
+
+        // CORREÇÃO 1: Verificar se o usuário foi encontrado
+        if(usuario == null) {
+            return false;
+        }
+
+        // CORREÇÃO 2: Comparar a SENHA armazenada com a senha digitada
+        if(usuario.getSenha().equals(senha)) {
+            return true; // Login bem-sucedido
+        }
+
+        return false; // Senhas não batem
+    }
 }
