@@ -1,7 +1,6 @@
 package org.cesar.br.projetos.Entidades;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.io.Serializable;
 
 import lombok.*;

@@ -21,12 +21,12 @@ public class UsuarioMediator {
 		return instancia;
 	}
 	
-	public boolean registrarUsuario(String username,String email, String password, LocalDate date) {
+	public boolean registrarUsuario(String nome,String email, String senha, LocalDate dataCadastro) {
 	    // Verifica se o usuário já existe
-	    if (usuarioD.buscarUsuarioNome(username) != null) {
+	    if (usuarioD.buscarUsuarioNome(nome) != null) {
 	        return false; // usuário já cadastrado
 	    }
-	    Usuario usuario = new Usuario(username, email, password, date);
+	    Usuario usuario = new Usuario(nome, email, senha, dataCadastro);
 
 	    // Salva usando o DAO
 	    return usuarioD.salvarUsuario(usuario);    // falta verificação

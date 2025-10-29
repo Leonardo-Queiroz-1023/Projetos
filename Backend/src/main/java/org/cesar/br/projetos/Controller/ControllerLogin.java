@@ -11,15 +11,15 @@ public class ControllerLogin {
 	private final UsuarioMediator mediator = UsuarioMediator.getInstancia();
 
     @PostMapping("/register")
-    public String registrar(@RequestParam String username, @RequestParam String email , @RequestParam String password) {
+    public String registrar(@RequestParam String nome, @RequestParam String email , @RequestParam String senha) {
     	
-        mediator.registrarUsuario(username, email ,password, null);
+        mediator.registrarUsuario(nome, email ,senha, null);
         return "Usuário registrado com sucesso!";
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String username, @RequestParam String password) {
-        boolean ok = mediator.autenticar(username, password);
+    public String login(@RequestParam String nome, @RequestParam String senha) {
+        boolean ok = mediator.autenticar(nome, senha);
         return ok ? "Login bem-sucedido!" : "Usuário ou senha inválidos!";
     }
 	
