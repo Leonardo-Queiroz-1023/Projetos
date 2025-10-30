@@ -21,12 +21,12 @@ public class UsuarioMediator {
 		return instancia;
 	}
 	
-	public boolean registrarUsuario(String username,String email, String password, LocalDate date) {
+	public boolean registrarUsuario(String nome,String email, String senha, LocalDate dataCadastro) {
 	    // Verifica se o usuário já existe
-	    if (usuarioD.buscarUsuarioNome(username) != null) {
+	    if (usuarioD.buscarUsuarioNome(nome) != null) {
 	        return false; // usuário já cadastrado
 	    }
-	    Usuario usuario = new Usuario(username, email, password, date);
+	    Usuario usuario = new Usuario(nome, email, senha, dataCadastro);
 
 	    // Salva usando o DAO
 	    return usuarioD.salvarUsuario(usuario);    // falta verificação
@@ -40,18 +40,24 @@ public class UsuarioMediator {
 		}
 		return usuarioD.buscarUsuarioNome(nome);
 	}
-	
-	public boolean autenticar (String nome, String senha) { // sistema de senhas
-		if(nome == null || nome.trim().isEmpty() || nome.trim().equals(nome) == false) {
-			return false;
-		}
-		
-		Usuario usuario = usuarioD.buscarUsuarioNome(nome);
-		
-		if(usuario.getNome().equals(senha) == false) {
-			return false;
-		}
-		
-		return true;
-	}
+
+    public boolean autenticarSenha (String nome, String senha) {
+        if(nome == null || nome.trim().isEmpty()) {
+            return false;
+        }
+
+        Usuario usuario = usuarioD.buscarUsuarioNome(nome);
+
+        // CORREÇÃO 1: Verificar se o usuário foi encontrado
+        if(usuario == null) {
+            return false;
+        }
+
+        // CORREÇÃO 2: Comparar a SENHA armazenada com a senha digitada
+        if(usuario.getSenha().equals(senha)) {
+            return true; // Login bem-sucedido
+        }
+
+        return false; // Senhas não batem
+    }
 }

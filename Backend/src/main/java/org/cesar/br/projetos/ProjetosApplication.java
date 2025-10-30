@@ -1,4 +1,4 @@
-package org.cesar.br.example.projetos;
+package org.cesar.br.projetos; // O pacote deve ser este!
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
