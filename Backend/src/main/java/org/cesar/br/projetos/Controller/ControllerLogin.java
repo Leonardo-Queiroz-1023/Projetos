@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/auth")
 public class ControllerLogin {
@@ -22,7 +22,7 @@ public class ControllerLogin {
                     usuarioDTO.getUsername(),
                     usuarioDTO.getEmail(),
                     usuarioDTO.getPassword(),
-                    null
+                    java.time.LocalDate.now() // Adicionado para evitar erro no Mediator
             );
             return ResponseEntity.ok(Map.of("message", "Usuário registrado com sucesso!"));
         } catch (RuntimeException e) {
