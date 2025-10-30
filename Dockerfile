@@ -3,14 +3,14 @@
 FROM node:20-alpine as frontend-builder
 WORKDIR /app/frontend
 
-# --- CORREÇÃO: Adicionado 'Projetos/' ao caminho ---
+# --- CORREÇÃO: Removido 'Projetos/' ---
 # Copia os arquivos de configuração de dependências primeiro para aproveitar o cache do Docker
-COPY Projetos/Frontend/package.json Projetos/Frontend/package-lock.json ./
+COPY Frontend/package.json Frontend/package-lock.json ./
 RUN npm install
 
-# --- CORREÇÃO: Adicionado 'Projetos/' ao caminho ---
+# --- CORREÇÃO: Removido 'Projetos/' ---
 # Copia o resto do código do frontend
-COPY Projetos/Frontend/ ./
+COPY Frontend/ ./
 
 # Roda o comando de build para gerar a pasta 'dist'
 RUN npm run build
@@ -21,16 +21,16 @@ RUN npm run build
 FROM maven:3.9-eclipse-temurin-21 as backend-builder
 WORKDIR /app/backend
 
-# --- CORREÇÃO: Adicionado 'Projetos/' e separado os comandos COPY para clareza ---
+# --- CORREÇÃO: Removido 'Projetos/' ---
 # Copia a configuração do Maven primeiro para cachear as dependências
-COPY Projetos/Backend/pom.xml .
-COPY Projetos/Backend/.mvn ./.mvn
-COPY Projetos/Backend/mvnw .
+COPY Backend/pom.xml .
+COPY Backend/.mvn ./.mvn
+COPY Backend/mvnw .
 RUN mvn dependency:go-offline
 
-# --- CORREÇÃO: Adicionado 'Projetos/' ao caminho ---
+# --- CORREÇÃO: Removido 'Projetos/' ---
 # Copia o código-fonte do backend
-COPY Projetos/Backend/src ./src
+COPY Backend/src ./src
 
 # A MÁGICA: Copia os arquivos do frontend já construídos (do estágio anterior)
 # para a pasta 'static' do Spring Boot.
@@ -48,7 +48,7 @@ WORKDIR /app
 # Expõe a porta que a aplicação Spring Boot usa
 EXPOSE 8080
 
-# --- CORREÇÃO: Adicionado 'Projetos/' ao caminho de origem do .jar ---
+# --- CORREÇÃO: Removido 'Projetos/' ---
 # Copia o .jar final e executável do estágio de build do backend para a imagem final
 COPY --from=backend-builder /app/backend/target/*.jar ./app.jar
 
