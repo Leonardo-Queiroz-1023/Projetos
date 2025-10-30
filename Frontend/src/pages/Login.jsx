@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // se veio com ?msg=... mostra
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const msg = params.get("msg");
+    if (msg) {
+      setMessage(msg);
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,13 +29,20 @@ function Login() {
         body: JSON.stringify({ username, password }),
       });
 
-      // Tenta extrair o JSON da resposta
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("✅ " + data.message);
+        // guarda que está logado
+        localStorage.setItem("logged", "true");
+        localStorage.setItem("username", username);
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+
+        // vai para o menu principal
+        navigate("/menu-central", { replace: true });
       } else {
-        setMessage("❌ Erro: " + data.error);
+        setMessage("❌ Erro: " + (data.error || "Credenciais inválidas"));
       }
     } catch (error) {
       setMessage("⚠️ Erro ao conectar com o servidor: " + error.message);
@@ -89,3 +108,4 @@ const styles = {
 };
 
 export default Login;
+
