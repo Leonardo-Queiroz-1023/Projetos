@@ -6,12 +6,12 @@ export default function MenuCentral() {
   const username = localStorage.getItem("username") || "Usuário";
 
   // se estiver testando sem login, deixa comentado
-  // useEffect(() => {
-  //   const logged = localStorage.getItem("logged") === "true";
-  //   if (!logged) {
-  //     navigate("/login?msg=Logue%20antes%20de%20ir%20para%20o%20menu", { replace: true });
-  //   }
-  // }, [navigate]);
+   useEffect(() => {
+     const logged = localStorage.getItem("logged") === "true";
+     if (!logged) {
+       navigate("/login?msg=Logue%20antes%20de%20ir%20para%20o%20menu", { replace: true });
+     }
+   }, [navigate]);
 
   function logout() {
     localStorage.removeItem("token");
