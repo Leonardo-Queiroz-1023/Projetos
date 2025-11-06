@@ -1,4 +1,4 @@
-package org.cesar.br.projetos.dao;
+package org.cesar.br.projetos.Dao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +18,11 @@ public class ModeloDAO {
         return new ArrayList<>(bancoFake);
     }
 
-    public Optional<Modelo> buscarPorId(long id) {
-        return bancoFake.stream()
-                .filter(m -> m.getId() == id)
-                .findFirst();
-    }
-
+   // public Optional<Modelo> buscarPorId(long id) {
+     //   return bancoFake.stream()
+    //            .filter(m -> m.getId() == id)
+     //           .findFirst();
+   // }
     // UPDATE
     public void atualizar(Modelo modeloAtualizado) {
         buscarPorId(modeloAtualizado.getId()).ifPresent(modelo -> {

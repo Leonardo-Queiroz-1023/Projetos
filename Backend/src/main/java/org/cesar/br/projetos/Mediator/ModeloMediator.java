@@ -1,4 +1,4 @@
-package org.cesar.br.projetos.mediator;
+package org.cesar.br.projetos.Mediator;
 
 import java.util.List;
 import java.util.stream.Collectors;
