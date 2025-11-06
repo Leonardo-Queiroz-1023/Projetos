@@ -6,9 +6,7 @@ import java.io.Serializable;
 import lombok.*;
 
 public class Usuario implements Serializable{
-	
-	private long id;
-	
+
 	@Getter @Setter private String nome;
 	@Getter @Setter private String email;
 	@Getter @Setter private String senha;

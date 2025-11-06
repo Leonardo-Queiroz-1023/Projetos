@@ -6,19 +6,25 @@ import lombok.Setter;
 
 public class Modelo implements Serializable {
 
+    @Getter
     private final long id;
 
-    @Getter @Setter private String nome;
-    @Getter @Setter private String descricao;
-    @Getter @Setter private PlataformasDeEnvios plataformasDisponiveis;
-    @Getter @Setter private String pergunta;
+    @Getter @Setter
+    private String nome;
 
-    // Construtor sem parâmetros
+    @Getter @Setter
+    private String descricao;
+
+    @Getter @Setter
+    private PlataformasDeEnvios plataformasDisponiveis;
+
+    @Getter @Setter
+    private String pergunta;
+
     Modelo() {
-        this.id = 0;  // ID deve ser configurado em um outro ponto, se necessário
+        this.id = 0;
     }
 
-    // Construtor com parâmetros
     public Modelo(long id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, String pergunta) {
         this.id = id;
         this.nome = nome;
@@ -27,7 +33,6 @@ public class Modelo implements Serializable {
         this.pergunta = pergunta;
     }
 
-    // Método para gerar cópia
     public Modelo gerarCopia() {
         return new Modelo(id, nome, descricao, plataformasDisponiveis, pergunta);
     }

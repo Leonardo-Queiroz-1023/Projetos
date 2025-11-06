@@ -2,37 +2,75 @@ package org.cesar.br.projetos.Dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.cesar.br.projetos.Entidades.Modelo;
+import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
 
 public class ModeloDAO {
-    private static final List<Modelo> bancoFake = new ArrayList<>();
 
-    // CREATE
-    public void salvar(Modelo modelo) {
-        bancoFake.add(modelo);
+    private static final List<Modelo> modelos = new ArrayList<>();
+
+    public boolean salvar(Modelo modelo) {
+        if (modelo == null) {
+            return false;
+        }
+        modelos.add(modelo);
+        return true;
     }
 
-    // READ
     public List<Modelo> listarTodos() {
-        return new ArrayList<>(bancoFake);
+        return new ArrayList<>(modelos);
     }
 
-   // public Optional<Modelo> buscarPorId(long id) {
-     //   return bancoFake.stream()
-    //            .filter(m -> m.getId() == id)
-     //           .findFirst();
-   // }
-    // UPDATE
-    public void atualizar(Modelo modeloAtualizado) {
-        buscarPorId(modeloAtualizado.getId()).ifPresent(modelo -> {
-            bancoFake.remove(modelo);
-            bancoFake.add(modeloAtualizado);
-        });
+    public Modelo buscarPorId(long id) {
+        for (Modelo modelo : modelos) {
+            if (modelo.getId() == id) {
+                return modelo;
+            }
+        }
+        return null;
     }
 
-    // DELETE
-    public void deletar(long id) {
-        bancoFake.removeIf(m -> m.getId() == id);
+    public boolean atualizarNome(long id, String nome) {
+        Modelo modelo = buscarPorId(id);
+        if (modelo == null || nome == null || nome.trim().isEmpty()) {
+            return false;
+        }
+        modelo.setNome(nome);
+        return true;
+    }
+
+    public boolean atualizarDescricao(long id, String descricao) {
+        Modelo modelo = buscarPorId(id);
+        if (modelo == null || descricao == null || descricao.trim().isEmpty()) {
+            return false;
+        }
+        modelo.setDescricao(descricao);
+        return true;
+    }
+
+    public boolean atualizarPlataforma(long id, PlataformasDeEnvios plataforma) {
+        Modelo modelo = buscarPorId(id);
+        if (modelo == null || plataforma == null) {
+            return false;
+        }
+        modelo.setPlataformasDisponiveis(plataforma);
+        return true;
+    }
+
+    public boolean atualizarPergunta(long id, String pergunta) {
+        Modelo modelo = buscarPorId(id);
+        if (modelo == null || pergunta == null || pergunta.trim().isEmpty()) {
+            return false;
+        }
+        modelo.setPergunta(pergunta);
+        return true;
+    }
+
+    public boolean deletar(long id) {
+        Modelo modelo = buscarPorId(id);
+        if (modelo == null) {
+            return false;
+        }
+        return modelos.remove(modelo);
     }
 }

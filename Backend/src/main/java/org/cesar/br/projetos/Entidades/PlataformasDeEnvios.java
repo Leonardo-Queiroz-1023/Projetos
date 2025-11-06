@@ -8,13 +8,11 @@ public enum PlataformasDeEnvios {
     private final int codigo;
     private final String plataforma;
 
-    // Construtor do enum
     PlataformasDeEnvios(int codigo, String plataforma) {
         this.codigo = codigo;
         this.plataforma = plataforma;
     }
 
-    // Getters
     public int getCodigo() {
         return codigo;
     }
