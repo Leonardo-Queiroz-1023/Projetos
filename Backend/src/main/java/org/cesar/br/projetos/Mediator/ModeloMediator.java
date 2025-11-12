@@ -3,8 +3,13 @@ package org.cesar.br.projetos.Mediator;
 import org.cesar.br.projetos.Dao.ModeloDAO;
 import org.cesar.br.projetos.Entidades.Modelo;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
+
 import java.util.List;
 
+/**
+ * Camada de negócio responsável por mediar as operações entre o DAO e o restante do sistema.
+ * Aqui são aplicadas as regras de negócio, enquanto o DAO apenas acessa os dados.
+ */
 public class ModeloMediator {
 
     private static ModeloDAO modeloD;
@@ -21,17 +26,35 @@ public class ModeloMediator {
         return instancia;
     }
 
-    public boolean criarModelo(long id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, String pergunta) {
+    // ---------------------------------------------------------------------
+    // CREATE
+    // ---------------------------------------------------------------------
+    public boolean criarModelo(long id, String nome, String descricao,
+                               PlataformasDeEnvios plataformasDisponiveis, String pergunta) {
+
         if (nome == null || nome.trim().isEmpty()) {
+            return false;
+        }
+        if (descricao == null || descricao.trim().isEmpty()) {
             return false;
         }
         if (pergunta == null || pergunta.trim().isEmpty()) {
             return false;
         }
+
+        // Evita duplicação de ID
+        if (modeloD.buscarPorId(id) != null) {
+            return false;
+        }
+
         Modelo modelo = new Modelo(id, nome, descricao, plataformasDisponiveis, pergunta);
-        return modeloD.salvar(modelo);
+        modeloD.salvar(modelo);
+        return true;
     }
 
+    // ---------------------------------------------------------------------
+    // READ
+    // ---------------------------------------------------------------------
     public List<Modelo> listarModelos() {
         return modeloD.listarTodos();
     }
@@ -43,38 +66,49 @@ public class ModeloMediator {
         return modeloD.buscarPorId(id);
     }
 
-    public boolean atualizarNome(long id, String nome) {
-        if (nome == null || nome.trim().isEmpty()) {
+    // ---------------------------------------------------------------------
+    // UPDATE
+    // ---------------------------------------------------------------------
+    public boolean atualizarModelo(long id, String nome, String descricao,
+                                   PlataformasDeEnvios plataformasDisponiveis, String pergunta) {
+
+        Modelo existente = modeloD.buscarPorId(id);
+        if (existente == null) {
             return false;
         }
-        return modeloD.atualizarNome(id, nome);
-    }
 
-    public boolean atualizarDescricao(long id, String descricao) {
-        if (descricao == null || descricao.trim().isEmpty()) {
-            return false;
+        // Atualiza apenas os campos não nulos
+        if (nome != null && !nome.trim().isEmpty()) {
+            existente.setNome(nome);
         }
-        return modeloD.atualizarDescricao(id, descricao);
-    }
-
-    public boolean atualizarPlataforma(long id, PlataformasDeEnvios plataformasDisponiveis) {
-        if (plataformasDisponiveis == null) {
-            return false;
+        if (descricao != null && !descricao.trim().isEmpty()) {
+            existente.setDescricao(descricao);
         }
-        return modeloD.atualizarPlataforma(id, plataformasDisponiveis);
-    }
-
-    public boolean atualizarPergunta(long id, String pergunta) {
-        if (pergunta == null || pergunta.trim().isEmpty()) {
-            return false;
+        if (plataformasDisponiveis != null) {
+            existente.setPlataformasDisponiveis(plataformasDisponiveis);
         }
-        return modeloD.atualizarPergunta(id, pergunta);
+        if (pergunta != null && !pergunta.trim().isEmpty()) {
+            existente.setPergunta(pergunta);
+        }
+
+        modeloD.atualizar(existente);
+        return true;
     }
 
+    // ---------------------------------------------------------------------
+    // DELETE
+    // ---------------------------------------------------------------------
     public boolean deletarModelo(long id) {
         if (id < 0) {
             return false;
         }
-        return modeloD.deletar(id);
+
+        Modelo existente = modeloD.buscarPorId(id);
+        if (existente == null) {
+            return false;
+        }
+
+        modeloD.deletar(id);
+        return true;
     }
 }

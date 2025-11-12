@@ -5,72 +5,48 @@ import java.util.List;
 import org.cesar.br.projetos.Entidades.Modelo;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
 
+/**
+ * DAO responsável apenas pelo acesso e manipulação dos dados da entidade Modelo.
+ *
+ * Esta é uma implementação simples em memória, sem conexão real com banco de dados.
+ * Nenhuma regra de negócio ou validação deve ser feita aqui.
+ */
 public class ModeloDAO {
 
     private static final List<Modelo> modelos = new ArrayList<>();
 
-    public boolean salvar(Modelo modelo) {
-        if (modelo == null) {
-            return false;
-        }
+    // CREATE
+    public void salvar(Modelo modelo) {
         modelos.add(modelo);
-        return true;
     }
 
+    // READ (todos)
     public List<Modelo> listarTodos() {
         return new ArrayList<>(modelos);
     }
 
+    // READ (por ID) — versão simplificada sem for-each
     public Modelo buscarPorId(long id) {
-        for (Modelo modelo : modelos) {
-            if (modelo.getId() == id) {
-                return modelo;
+        for (int i = 0; i < modelos.size(); i++) {
+            if (modelos.get(i).getId() == id) {
+                return modelos.get(i);
             }
         }
         return null;
     }
 
-    public boolean atualizarNome(long id, String nome) {
-        Modelo modelo = buscarPorId(id);
-        if (modelo == null || nome == null || nome.trim().isEmpty()) {
-            return false;
+    // UPDATE — substitui o objeto inteiro pelo atualizado
+    public void atualizar(Modelo modeloAtualizado) {
+        for (int i = 0; i < modelos.size(); i++) {
+            if (modelos.get(i).getId() == modeloAtualizado.getId()) {
+                modelos.set(i, modeloAtualizado);
+                return;
+            }
         }
-        modelo.setNome(nome);
-        return true;
     }
 
-    public boolean atualizarDescricao(long id, String descricao) {
-        Modelo modelo = buscarPorId(id);
-        if (modelo == null || descricao == null || descricao.trim().isEmpty()) {
-            return false;
-        }
-        modelo.setDescricao(descricao);
-        return true;
-    }
-
-    public boolean atualizarPlataforma(long id, PlataformasDeEnvios plataforma) {
-        Modelo modelo = buscarPorId(id);
-        if (modelo == null || plataforma == null) {
-            return false;
-        }
-        modelo.setPlataformasDisponiveis(plataforma);
-        return true;
-    }
-
-    public boolean atualizarPergunta(long id, String pergunta) {
-        Modelo modelo = buscarPorId(id);
-        if (modelo == null || pergunta == null || pergunta.trim().isEmpty()) {
-            return false;
-        }
-        modelo.setPergunta(pergunta);
-        return true;
-    }
-
-    public boolean deletar(long id) {
-        Modelo modelo = buscarPorId(id);
-        if (modelo == null) {
-            return false;
-        }
-        return modelos.remove(modelo);
+    // DELETE
+    public void deletar(long id) {
+        modelos.removeIf(m -> m.getId() == id);
     }
 }
