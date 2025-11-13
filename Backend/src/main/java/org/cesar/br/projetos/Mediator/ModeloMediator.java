@@ -2,6 +2,7 @@ package org.cesar.br.projetos.Mediator;
 
 import org.cesar.br.projetos.Dao.ModeloDAO;
 import org.cesar.br.projetos.Entidades.Modelo;
+import org.cesar.br.projetos.Entidades.Perguntas;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
 import java.util.List;
 
@@ -21,14 +22,11 @@ public class ModeloMediator {
         return instancia;
     }
 
-    public boolean criarModelo(long id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, String pergunta) {
-        if (nome == null || nome.trim().isEmpty()) {
+    public boolean criarModelo(Modelo modelo) {
+        if (modelo == null || modelo.getNome().trim().isEmpty()) {
             return false;
         }
-        if (pergunta == null || pergunta.trim().isEmpty()) {
-            return false;
-        }
-        Modelo modelo = new Modelo(id, nome, descricao, plataformasDisponiveis, pergunta);
+
         return modeloD.salvar(modelo);
     }
 
@@ -64,11 +62,12 @@ public class ModeloMediator {
         return modeloD.atualizarPlataforma(id, plataformasDisponiveis);
     }
 
-    public boolean atualizarPergunta(long id, String pergunta) {
-        if (pergunta == null || pergunta.trim().isEmpty()) {
+    public boolean atualizarPergunta(long id, Perguntas pergunta, String descricao) {
+    	
+        if (pergunta == null) {
             return false;
         }
-        return modeloD.atualizarPergunta(id, pergunta);
+        return modeloD.atualizarPerguntaDescricao(id, pergunta, descricao);
     }
 
     public boolean deletarModelo(long id) {
