@@ -8,16 +8,47 @@ import Modelos from "./pages/Modelos.jsx";
 import Pesquisas from "./pages/Pesquisas.jsx";
 import CriarModelos from "./pages/CriarModelos.jsx";
 
+const navStyle = {
+  padding: "12px 24px",
+  display: "flex",
+  gap: "16px",
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "black",
+  borderBottom: "2px solid white",
+  position: "sticky",
+  top: 0,
+  zIndex: 10,
+};
+
+const navLinkStyle = {
+  color: "white",
+  textDecoration: "none",
+  fontWeight: 500,
+};
 
 export default function App() {
   return (
     <>
-      <nav style={{ padding: 12 }}>
-        <Link to="/Login">Login</Link> |{" "}
-        <Link to="/Register">Registro</Link> |{" "}
-        <Link to="/Menu-central">Menu Central</Link> |{" "}
-        <Link to="/Modelos">Modelos</Link> |{" "}
-        <Link to="/Pesquisas">Pesquisas</Link>
+      <nav style={navStyle}>
+        <Link to="/login" style={navLinkStyle}>
+          Login
+        </Link>
+        <Link to="/register" style={navLinkStyle}>
+          Registro
+        </Link>
+        <Link to="/menu-central" style={navLinkStyle}>
+          Menu Central
+        </Link>
+        <Link to="/modelos" style={navLinkStyle}>
+          Modelos
+        </Link>
+        <Link to="/pesquisas" style={navLinkStyle}>
+          Pesquisas
+        </Link>
+        <Link to="/criar-modelos" style={navLinkStyle}>
+          Criar Modelos
+        </Link>
       </nav>
 
       <Routes>
@@ -27,7 +58,7 @@ export default function App() {
         <Route path="/menu-central" element={<MenuCentral />} />
         <Route path="/modelos" element={<Modelos />} />
         <Route path="/pesquisas" element={<Pesquisas />} />
-        <Route path="/CriarModelos" element={<CriarModelos />} />
+        <Route path="/criar-modelos" element={<CriarModelos />} />
         <Route path="*" element={<div>404</div>} />
       </Routes>
     </>

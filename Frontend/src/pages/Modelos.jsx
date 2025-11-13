@@ -1,19 +1,20 @@
 // src/pages/Modelos.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PerimeterBox from "../components/PerimeterBox";
 
 export default function Modelos() {
   const navigate = useNavigate();
   const logged = localStorage.getItem("logged") === "true";
 
-  // mesma proteção do menu central
-  useEffect(() => {
-    if (!logged) {
-      navigate("/login?msg=Logue%20antes%20de%20acessar%20modelos", {
-        replace: true,
-      });
-    }
-  }, [logged, navigate]);
+  // se estiver testando sem login, deixa comentado
+  // useEffect(() => {
+  //   if (!logged) {
+  //     navigate("/login?msg=Logue%20antes%20de%20acessar%20modelos", {
+  //       replace: true,
+  //     });
+  //   }
+  // }, [logged, navigate]);
 
   return (
     <div
@@ -25,7 +26,7 @@ export default function Modelos() {
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ textAlign: "center" }}>
+      <PerimeterBox style={{ textAlign: "center", width: "320px" }}>
         <h1 style={{ marginBottom: 20 }}>Modelos</h1>
         <p style={{ marginBottom: 25 }}>
           Escolha o que deseja fazer com os modelos.
@@ -44,11 +45,14 @@ export default function Modelos() {
           >
             Editar modelos
           </button>
-          <button style={{ ...btn, background: "#444" }} onClick={() => navigate("/menu-central")}>
+          <button
+            style={{ ...btn, background: "#444" }}
+            onClick={() => navigate("/menu-central")}
+          >
             Voltar ao menu
           </button>
         </div>
-      </div>
+      </PerimeterBox>
     </div>
   );
 }

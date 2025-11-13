@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PerimeterBox from "../components/PerimeterBox";
 
 export default function MenuCentral() {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ export default function MenuCentral() {
   return (
     <div
       style={{
-        // ocupa a tela toda menos o nav de cima (ajusta se o nav for maior)
         minHeight: "calc(100vh - 50px)",
         display: "flex",
         alignItems: "center",
@@ -31,21 +31,15 @@ export default function MenuCentral() {
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ textAlign: "center" }}>
+      <PerimeterBox style={{ textAlign: "center", width: "320px" }}>
         <h1 style={{ marginBottom: 20 }}>Menu Central</h1>
         <p style={{ marginBottom: 30 }}>Bem-vinda(o), {username}.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-          <button
-            onClick={() => navigate("/modelos")}
-            style={btn}
-          >
+          <button onClick={() => navigate("/modelos")} style={btn}>
             Modelos
           </button>
-          <button
-            onClick={() => navigate("/pesquisas")}
-            style={btn}
-          >
+          <button onClick={() => navigate("/pesquisas")} style={btn}>
             Pesquisas
           </button>
           <button
@@ -55,7 +49,7 @@ export default function MenuCentral() {
             Sair
           </button>
         </div>
-      </div>
+      </PerimeterBox>
     </div>
   );
 }
