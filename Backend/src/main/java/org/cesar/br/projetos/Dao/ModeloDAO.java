@@ -3,7 +3,10 @@ package org.cesar.br.projetos.Dao;
 import java.util.ArrayList;
 import java.util.List;
 import org.cesar.br.projetos.Entidades.Modelo;
+import org.cesar.br.projetos.Entidades.Perguntas;
+import org.cesar.br.projetos.Dao.PerguntasDAO;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
+import org.cesar.br.projetos.Mediator.PerguntasMediator;
 
 public class ModeloDAO {
 
@@ -30,7 +33,7 @@ public class ModeloDAO {
         return null;
     }
 
-    public boolean atualizarNome(long id, String nome) {
+    public boolean atualizarNome(long id, String nome) { // ❌ Desvantagem: os dados somem quando o programa encerra, uma daas solução é usa SQL
         Modelo modelo = buscarPorId(id);
         if (modelo == null || nome == null || nome.trim().isEmpty()) {
             return false;
@@ -39,7 +42,7 @@ public class ModeloDAO {
         return true;
     }
 
-    public boolean atualizarDescricao(long id, String descricao) {
+    public boolean atualizarDescricao(long id, String descricao) { // ❌ Desvantagem: os dados somem quando o programa encerra, uma daas solução é usa SQL
         Modelo modelo = buscarPorId(id);
         if (modelo == null || descricao == null || descricao.trim().isEmpty()) {
             return false;
@@ -48,7 +51,7 @@ public class ModeloDAO {
         return true;
     }
 
-    public boolean atualizarPlataforma(long id, PlataformasDeEnvios plataforma) {
+    public boolean atualizarPlataforma(long id, PlataformasDeEnvios plataforma) { // ❌ Desvantagem: os dados somem quando o programa encerra, uma daas solução é usa SQL
         Modelo modelo = buscarPorId(id);
         if (modelo == null || plataforma == null) {
             return false;
@@ -57,13 +60,26 @@ public class ModeloDAO {
         return true;
     }
 
-    public boolean atualizarPergunta(long id, String pergunta) {
+    public boolean atualizarPerguntaDescricao(long id, Perguntas perguntaParaAtualizar, String descricao) { // Vai precisar de funções diferentes para atualizar coisas diferentes
         Modelo modelo = buscarPorId(id);
-        if (modelo == null || pergunta == null || pergunta.trim().isEmpty()) {
+        
+        if (modelo == null || perguntaParaAtualizar == null) {
             return false;
         }
-        modelo.setPergunta(pergunta);
-        return true;
+        
+        long idP = perguntaParaAtualizar.getId();
+        
+      for(Perguntas p : modelo.getPerguntas()) {
+    	  if(p.getId() == idP) {
+    		  p.setDescricao(descricao);
+    		  
+              PerguntasDAO perguntaDAO = new PerguntasDAO(); // ou injetar via construtor
+              perguntaDAO.atualizarDescricao(idP, descricao);
+    		  
+    	  }
+      }  
+        
+        return false;
     }
 
     public boolean deletar(long id) {
