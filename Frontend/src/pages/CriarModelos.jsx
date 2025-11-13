@@ -1,5 +1,5 @@
 // src/pages/CriarModelos.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 
@@ -9,9 +9,12 @@ export default function CriarModelos() {
   const [descricao, setDescricao] = useState("");
   const [plataforma, setPlataforma] = useState("");
   const [pergunta, setPergunta] = useState("");
+  const [imagem, setImagem] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [message, setMessage] = useState("");
 
   const logged = localStorage.getItem("logged") === "true";
+  const fileInputRef = useRef(null);
 
   // se estiver testando sem login, deixa comentado
   // useEffect(() => {
@@ -22,6 +25,37 @@ export default function CriarModelos() {
   //   }
   // }, [logged, navigate]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagem(file);
+      setMessage("");
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setImagem(file);
+      setMessage("");
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -30,6 +64,7 @@ export default function CriarModelos() {
       descricao,
       plataformasDisponiveis: plataforma,
       pergunta,
+      imagemNome: imagem ? imagem.name : null,
     };
 
     console.log("Modelo criado (mock):", payload);
@@ -102,6 +137,36 @@ export default function CriarModelos() {
             />
           </label>
 
+          <label style={styles.label}>
+            Imagem de referência (opcional)
+            <div
+              style={{
+                ...styles.dropzone,
+                ...(isDragging ? styles.dropzoneActive : {}),
+              }}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() =>
+                fileInputRef.current && fileInputRef.current.click()
+              }
+            >
+              <p>Arraste uma imagem aqui ou clique para selecionar</p>
+              {imagem && (
+                <p style={styles.fileName}>
+                  Arquivo selecionado: {imagem.name}
+                </p>
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </label>
+
           <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
             <button type="submit" style={styles.buttonPrimary}>
               Salvar modelo
@@ -159,6 +224,26 @@ const styles = {
     border: "1px solid #444",
     backgroundColor: "#222",
     color: "#fff",
+  },
+  dropzone: {
+    padding: "14px",
+    fontSize: "13px",
+    borderRadius: "8px",
+    border: "2px dashed #666",
+    backgroundColor: "#111",
+    color: "#ddd",
+    textAlign: "center",
+    cursor: "pointer",
+  },
+  dropzoneActive: {
+    borderColor: "#fff",
+    backgroundColor: "#222",
+  },
+  fileName: {
+    marginTop: "8px",
+    fontSize: "12px",
+    color: "#aaa",
+    wordBreak: "break-all",
   },
   buttonPrimary: {
     flex: 1,
