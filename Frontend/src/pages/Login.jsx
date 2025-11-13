@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 
-
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -10,7 +9,6 @@ function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // se veio com ?msg=... mostra
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const msg = params.get("msg");
@@ -34,14 +32,11 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // guarda que está logado
         localStorage.setItem("logged", "true");
         localStorage.setItem("username", username);
         if (data.token) {
           localStorage.setItem("token", data.token);
         }
-
-        // vai para o menu principal
         navigate("/menu-central", { replace: true });
       } else {
         setMessage("❌ Erro: " + (data.error || "Credenciais inválidas"));
@@ -52,48 +47,50 @@ function Login() {
   };
 
   return (
-    <PerimeterBox style={{ width: "280px" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="text"
-          placeholder="Usuário"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={styles.input}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Senha"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-          required
-        />
-        <button type="submit" style={styles.button}>
-          Entrar
-        </button>
-      </form>
-      {message && <p style={styles.message}>{message}</p>}
-    </PerimeterBox>
+    <div
+      style={{
+        minHeight: "calc(100vh - 50px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <PerimeterBox style={{ width: "320px" }}>
+        <h2 style={{ marginBottom: 20 }}>Login</h2>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <input
+            type="text"
+            placeholder="Usuário"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <button type="submit" style={styles.button}>
+            Entrar
+          </button>
+        </form>
+        {message && <p style={styles.message}>{message}</p>}
+      </PerimeterBox>
+    </div>
   );
 }
 
 const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100vh",
-    fontFamily: "sans-serif",
-  },
   form: {
     display: "flex",
     flexDirection: "column",
     gap: "10px",
-    width: "250px",
+    width: "100%",
   },
   input: {
     padding: "8px",
@@ -110,4 +107,3 @@ const styles = {
 };
 
 export default Login;
-
