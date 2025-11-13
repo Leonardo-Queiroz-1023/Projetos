@@ -79,7 +79,7 @@ public class ModeloDAO {
     	  }
       }  
         
-        return false;
+        return true;
     }
 
     public boolean deletar(long id) {
