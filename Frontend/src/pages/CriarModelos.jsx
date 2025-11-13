@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
+import api from "../services/api";
 
 export default function CriarModelos() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function CriarModelos() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const payload = {
@@ -67,8 +68,18 @@ export default function CriarModelos() {
       imagemNome: imagem ? imagem.name : null,
     };
 
-    console.log("Modelo criado (mock):", payload);
-    setMessage("✅ Modelo criado (a integração com o backend vem depois).");
+    try {
+      await api.createModelo(payload);
+      setMessage("✅ Modelo criado no backend!");
+      setNome("");
+      setDescricao("");
+      setPlataforma("");
+      setPergunta("");
+      setImagem(null);
+    } catch (error) {
+      console.error("Erro ao criar modelo:", error);
+      setMessage("❌ Falha ao criar modelo. Verifique o backend.");
+    }
   };
 
   return (
