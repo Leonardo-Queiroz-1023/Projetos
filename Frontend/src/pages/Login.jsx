@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import PerimeterBox from "../components/PerimeterBox";
+
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -50,7 +52,7 @@ function Login() {
   };
 
   return (
-    <div style={styles.container}>
+    <PerimeterBox style={{ width: "280px" }}>
       <h2>Login</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
@@ -74,7 +76,7 @@ function Login() {
         </button>
       </form>
       {message && <p style={styles.message}>{message}</p>}
-    </div>
+    </PerimeterBox>
   );
 }
 
