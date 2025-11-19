@@ -42,18 +42,13 @@ EXPOSE ${PORT:-8080}
 # Copia o JAR
 COPY --from=backend-builder /app/backend/target/*.jar ./app.jar
 
-# Cria diretório para persistência do H2
+# Copia script de inicialização
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Cria diretório para persistência do H2 (fallback)
 RUN mkdir -p /data
 VOLUME /data
 
-# ✅ Configurações do banco via ENV - File-based H2 para persistência
-ENV SPRING_DATASOURCE_URL=jdbc:h2:file:/data/projetosdb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
-ENV SPRING_DATASOURCE_USERNAME=sa
-ENV SPRING_DATASOURCE_PASSWORD=
-ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
-ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
-ENV SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
-ENV SPRING_H2_CONSOLE_ENABLED=false
-
-# ✅ IMPORTANTE: Render injeta a variável PORT, Spring precisa escutar nela
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
+# ✅ IMPORTANTE: Render injeta PORT e DATABASE_URL automaticamente
+ENTRYPOINT ["/app/start.sh"]

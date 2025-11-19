@@ -1,22 +1,23 @@
 services:
+  # PostgreSQL Database
+  - type: pserv
+    name: projetos-db
+    plan: free
+    env: docker
+    region: oregon
+    
+  # Web Service
   - type: web
     name: meu-projeto-final
     plan: free
+    runtime: docker
     
-    buildCommand: |
-      cd Backend
-      chmod +x ./mvnw
-      cd ../Frontend
-      npm ci
-      npm run build
-      cd ../Backend
-      rm -rf src/main/resources/static
-      mkdir -p src/main/resources/static
-      cp -r ../Frontend/dist/* src/main/resources/static/
-      ./mvnw clean package -DskipTests
-
-    startCommand: java -Dserver.port=$PORT -jar Backend/target/*.jar
-
     envVars:
-      - key: JAVA_VERSION
-        value: 21
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: projetos-db
+          property: connectionString
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
