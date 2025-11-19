@@ -1,4 +1,4 @@
-package org.cesar.br.projetos.config;
+package org.cesar.br.projetos.Config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
