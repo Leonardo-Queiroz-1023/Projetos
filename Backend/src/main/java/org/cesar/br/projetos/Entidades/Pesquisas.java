@@ -1,3 +1,7 @@
-public class Pesquisas {
-    
+public class Pesquisas extends Modelo{
+
+    int id
+    LocalDatedata_inicio
+    data_final
+
 }
