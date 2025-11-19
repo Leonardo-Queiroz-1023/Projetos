@@ -1,7 +1,7 @@
-public class Pesquisas extends Modelo{
+//public class Pesquisas extends Modelo{
 
-    int id
-    LocalDatedata_inicio
-    data_final
+//    int id
+//    LocalDatedata_inicio
+//    data_final
 
-}
+//}
