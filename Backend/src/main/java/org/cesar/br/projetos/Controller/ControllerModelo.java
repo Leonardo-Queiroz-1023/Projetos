@@ -44,70 +44,41 @@ public class ControllerModelo {
         }
     }
 
-    @PutMapping("/atualizar/nome/{id}")
-    public ResponseEntity<?> atualizarNome(@PathVariable long id, @RequestBody Map<String, String> body) {
-        String nome = body.get("nome");
-        boolean atualizado = mediator.atualizarNome(id, nome);
-        if (atualizado) {
-            return ResponseEntity.ok(Map.of("message", "Nome atualizado com sucesso!"));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("error", "Falha ao atualizar nome."));
-        }
-    }
+    @PutMapping("/atualizar/{id}")
+    public ResponseEntity<?> atualizarModelo(
+            @PathVariable long id,
+            @RequestBody Map<String, Object> body) {
 
-    @PutMapping("/atualizar/descricao/{id}")
-    public ResponseEntity<?> atualizarDescricao(@PathVariable long id, @RequestBody Map<String, String> body) {
-        String descricao = body.get("descricao");
-        boolean atualizado = mediator.atualizarDescricao(id, descricao);
-        if (atualizado) {
-            return ResponseEntity.ok(Map.of("message", "Descrição atualizada com sucesso!"));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("error", "Falha ao atualizar descrição."));
-        }
-    }
-
-    @PutMapping("/atualizar/plataforma/{id}")
-    public ResponseEntity<?> atualizarPlataforma(@PathVariable long id, @RequestBody Map<String, String> body) {
         try {
-            String plataformaStr = body.get("plataforma");
-            if (plataformaStr == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "A chave 'plataforma' é obrigatória."));
-            }
-            PlataformasDeEnvios plataforma = PlataformasDeEnvios.valueOf(plataformaStr.toUpperCase());
+            String nome = (String) body.get("nome");
+            String descricao = (String) body.get("descricao");
+            String pergunta = (String) body.get("pergunta");
 
-            boolean atualizado = mediator.atualizarPlataforma(id, plataforma);
+            PlataformasDeEnvios plataforma = null;
+
+            if (body.containsKey("plataformasDisponiveis") && body.get("plataformasDisponiveis") != null) {
+                String plataformaStr = body.get("plataformasDisponiveis").toString().toUpperCase();
+                plataforma = PlataformasDeEnvios.valueOf(plataformaStr);
+            }
+
+            boolean atualizado = mediator.atualizarModelo(
+                    id,
+                    nome,
+                    descricao,
+                    plataforma,
+                    pergunta
+            );
+
             if (atualizado) {
-                return ResponseEntity.ok(Map.of("message", "Plataforma atualizada com sucesso!"));
+                return ResponseEntity.ok(Map.of("message", "Modelo atualizado com sucesso!"));
             } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "Falha ao atualizar plataforma (Modelo não encontrado)."));
+                return ResponseEntity.badRequest().body(Map.of("error", "Falha ao atualizar (modelo não encontrado ou dados inválidos)."));
             }
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Valor de plataforma inválido: " + body.get("plataforma")));
-        } catch (NullPointerException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "A chave 'plataforma' é obrigatória."));
+            return ResponseEntity.badRequest().body(Map.of("error", "Valor de plataforma inválido."));
         }
     }
-
-    @PutMapping("/atualizar/pergunta/{id}")
-    public ResponseEntity<?> atualizarPergunta(@PathVariable long id, @RequestBody Perguntas pergunta) {
-
-        if (pergunta == null || pergunta.getDescricao() == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "JSON inválido. O objeto 'pergunta' e sua 'descricao' são obrigatórios."));
-        }
-
-        boolean atualizado = mediator.atualizarPergunta(
-                id,
-                pergunta,
-                pergunta.getDescricao()
-        );
-
-        if (atualizado) {
-            return ResponseEntity.ok(Map.of("message", "Pergunta atualizada com sucesso!"));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("error", "Falha ao atualizar pergunta (verifique os IDs)."));
-        }
-    }
-
     @DeleteMapping("/deletar/{id}")
     public ResponseEntity<?> deletar(@PathVariable long id) {
         boolean deletado = mediator.deletarModelo(id);
