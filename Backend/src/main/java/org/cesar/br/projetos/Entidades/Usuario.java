@@ -13,7 +13,7 @@ import lombok.*;
 public class Usuario implements Serializable{
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Getter
 	private Long id;
 
@@ -22,7 +22,7 @@ public class Usuario implements Serializable{
 	@Getter @Setter private String senha;
 	@Getter private LocalDate dataCadastro;
 
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "usuario", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
 	@JsonManagedReference
 	@Getter @Setter
 	private List<Modelo> modelos = new ArrayList<>();

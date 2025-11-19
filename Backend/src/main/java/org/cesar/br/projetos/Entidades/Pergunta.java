@@ -11,6 +11,7 @@ import java.util.UUID;
 public class Pergunta implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Getter
     private UUID id;
 
@@ -26,7 +27,6 @@ public class Pergunta implements Serializable {
     public Pergunta() {}
 
     public Pergunta(String questao) {
-        this.id = UUID.randomUUID();
         this.questao = questao;
     }
 }

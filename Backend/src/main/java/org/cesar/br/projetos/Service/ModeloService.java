@@ -44,8 +44,8 @@ public class ModeloService {
             return null;
         }
 
-        // Criação com UUID automático e persistência
-        Modelo modelo = new Modelo(UUID.randomUUID(), nome, descricao, plataformasDisponiveis, usuario);
+        // Criação deixando Hibernate gerar o UUID automaticamente
+        Modelo modelo = new Modelo(nome, descricao, plataformasDisponiveis, usuario);
         return modeloRepository.save(modelo);
     }
 

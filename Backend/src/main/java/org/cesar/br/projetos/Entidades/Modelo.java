@@ -14,6 +14,7 @@ import java.util.UUID;
 public class Modelo implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Getter
     private UUID id;
 
@@ -27,20 +28,29 @@ public class Modelo implements Serializable {
     @Enumerated(EnumType.STRING)
     private PlataformasDeEnvios plataformasDisponiveis;
 
-    @OneToMany(mappedBy = "modelo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "modelo", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     @JsonManagedReference
     @Getter @Setter
     private List<Pergunta> perguntas = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = true)
     @JsonBackReference
     @Getter @Setter
     private Usuario usuario;
 
     public Modelo() {}
+    
     public Modelo(UUID id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, Usuario usuario) {
         this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
+        this.plataformasDisponiveis = plataformasDisponiveis;
+        this.usuario = usuario;
+    }
+    
+    // Construtor sem ID para deixar Hibernate gerar
+    public Modelo(String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, Usuario usuario) {
         this.nome = nome;
         this.descricao = descricao;
         this.plataformasDisponiveis = plataformasDisponiveis;
