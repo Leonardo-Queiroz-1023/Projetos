@@ -36,13 +36,13 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-EXPOSE 8080
+# ✅ Render usa a variável PORT dinamicamente
+EXPOSE ${PORT:-8080}
 
 # Copia o JAR
 COPY --from=backend-builder /app/backend/target/*.jar ./app.jar
 
-# ✅ SOLUÇÃO: Configura o banco via variáveis de ambiente
-# Isso sobrescreve qualquer problema com application.properties
+# ✅ Configurações do banco via ENV (Render permite sobrescrever)
 ENV SPRING_DATASOURCE_URL=jdbc:h2:mem:projetosdb
 ENV SPRING_DATASOURCE_USERNAME=sa
 ENV SPRING_DATASOURCE_PASSWORD=
@@ -51,5 +51,5 @@ ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
 ENV SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
 ENV SPRING_H2_CONSOLE_ENABLED=false
 
-# Comando de inicialização
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# ✅ IMPORTANTE: Render injeta a variável PORT, Spring precisa escutar nela
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
