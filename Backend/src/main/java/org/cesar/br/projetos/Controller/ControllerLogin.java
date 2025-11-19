@@ -1,6 +1,6 @@
 package org.cesar.br.projetos.Controller;
 
-import org.cesar.br.projetos.DTO.UsuarioDTO;
+import org.cesar.br.projetos.Entidades.Usuario;
 import org.cesar.br.projetos.Mediator.UsuarioMediator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,36 +14,56 @@ public class ControllerLogin {
 
     private final UsuarioMediator mediator = UsuarioMediator.getInstancia();
 
-    // Endpoint de registro
+    // -------------------------------
+    // REGISTRO DE USUÁRIO
+    // -------------------------------
     @PostMapping("/register")
-    public ResponseEntity<?> registrar(@RequestBody UsuarioDTO usuarioDTO) {
+    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
         try {
             mediator.registrarUsuario(
-                    usuarioDTO.getUsername(),
-                    usuarioDTO.getEmail(),
-                    usuarioDTO.getPassword(),
-                    java.time.LocalDate.now() // Adicionado para evitar erro no Mediator
+                    usuario.getNome(),
+                    usuario.getEmail(),
+                    usuario.getSenha(),
+                    java.time.LocalDate.now()
             );
-            return ResponseEntity.ok(Map.of("message", "Usuário registrado com sucesso!"));
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Usuário registrado com sucesso!"
+            ));
+
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()
+            ));
         }
     }
 
-    // Endpoint de login
+    // -------------------------------
+    // LOGIN
+    // -------------------------------
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UsuarioDTO usuarioDTO) {
-        boolean ok = mediator.autenticarSenha(usuarioDTO.getUsername(), usuarioDTO.getPassword());
+    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+        boolean ok = mediator.autenticarSenha(
+                usuario.getNome(),
+                usuario.getSenha()
+        );
+
         if (ok) {
-            return ResponseEntity.ok(Map.of("message", "Login bem-sucedido!"));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Login bem-sucedido!"
+            ));
         } else {
-            return ResponseEntity.status(401).body(Map.of("error", "Usuário ou senha inválidos!"));
+            return ResponseEntity.status(401).body(Map.of(
+                    "error", "Usuário ou senha inválidos!"
+            ));
         }
     }
-    
+
+    // -------------------------------
+    // TESTE
+    // -------------------------------
     @GetMapping("/teste")
     public String teste() {
         return "Backend funcionando!";
     }
-    
 }
