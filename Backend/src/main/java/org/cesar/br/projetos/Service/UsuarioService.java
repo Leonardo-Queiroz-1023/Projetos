@@ -63,6 +63,20 @@ public class UsuarioService {
     }
 
     // ---------------------------------------------------------------------
+    // READ - Lógica de negócio: buscar usuário por ID
+    // ---------------------------------------------------------------------
+    public Usuario buscarPorId(Long id) {
+
+        // Validação: ID obrigatório
+        if (id == null) {
+            return null;
+        }
+
+        // Busca no repositório
+        return usuarioRepository.findById(id).orElse(null);
+    }
+
+    // ---------------------------------------------------------------------
     // AUTENTICAÇÃO - Lógica de negócio: validar credenciais
     // ---------------------------------------------------------------------
     public boolean autenticarUsuario(String nome, String senha) {

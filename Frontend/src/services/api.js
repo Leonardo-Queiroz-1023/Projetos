@@ -52,29 +52,47 @@ export const api = {
     // IMPORTANTE: O backend usa UUID para IDs de Modelo e Pergunta
 
     // POST /modelos/criar
-    createModelo: (modelo) => fetchAPI('/modelos/criar', {
-        method: 'POST',
-        body: JSON.stringify(modelo), // Envia o Modelo DTO completo (com ID UUID, nome, etc.)
-    }),
+    createModelo: (modelo) => {
+        const usuarioId = localStorage.getItem('usuarioId');
+        return fetchAPI('/modelos/criar', {
+            method: 'POST',
+            body: JSON.stringify({ ...modelo, usuarioId }),
+        });
+    },
 
     // GET /modelos/listar
-    listarModelos: () => fetchAPI('/modelos/listar'),
+    listarModelos: () => {
+        const usuarioId = localStorage.getItem('usuarioId');
+        return fetchAPI(`/modelos/listar?usuarioId=${usuarioId}`);
+    },
     
-    getModelos: () => fetchAPI('/modelos/listar'), // Alias para compatibilidade
+    getModelos: () => {
+        const usuarioId = localStorage.getItem('usuarioId');
+        return fetchAPI(`/modelos/listar?usuarioId=${usuarioId}`);
+    },
 
     // GET /modelos/{id} - ID é UUID
-    getModeloById: (id) => fetchAPI(`/modelos/${id}`),
+    getModeloById: (id) => {
+        const usuarioId = localStorage.getItem('usuarioId');
+        return fetchAPI(`/modelos/${id}?usuarioId=${usuarioId}`);
+    },
 
     // PUT /modelos/atualizar/{id} - ID é UUID
-    updateModelo: (id, body) => fetchAPI(`/modelos/atualizar/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body),
-    }),
+    updateModelo: (id, body) => {
+        const usuarioId = localStorage.getItem('usuarioId');
+        return fetchAPI(`/modelos/atualizar/${id}?usuarioId=${usuarioId}`, {
+            method: 'PUT',
+            body: JSON.stringify(body),
+        });
+    },
 
     // DELETE /modelos/deletar/{id} - ID é UUID
-    deleteModelo: (id) => fetchAPI(`/modelos/deletar/${id}`, {
-        method: 'DELETE',
-    }),
+    deleteModelo: (id) => {
+        const usuarioId = localStorage.getItem('usuarioId');
+        return fetchAPI(`/modelos/deletar/${id}?usuarioId=${usuarioId}`, {
+            method: 'DELETE',
+        });
+    },
 
     // Perguntas - Endpoints Mapeados para ControllerPerguntas
 

@@ -55,14 +55,13 @@ public class ControllerLogin {
     // -------------------------------
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        boolean autenticado = usuarioService.autenticarUsuario(
-                usuario.getNome(),
-                usuario.getSenha()
-        );
-
-        if (autenticado) {
+        Usuario usuarioAutenticado = usuarioService.buscarUsuario(usuario.getNome());
+        
+        if (usuarioAutenticado != null && 
+            usuarioService.autenticarUsuario(usuario.getNome(), usuario.getSenha())) {
             return ResponseEntity.ok(Map.of(
-                    "message", "Login bem-sucedido!"
+                    "message", "Login bem-sucedido!",
+                    "usuarioId", usuarioAutenticado.getId()
             ));
         } else {
             return ResponseEntity.status(401).body(Map.of(

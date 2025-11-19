@@ -1,5 +1,6 @@
 package org.cesar.br.projetos.Entidades;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,11 +31,19 @@ public class Modelo implements Serializable {
     @JsonManagedReference
     @Getter @Setter
     private List<Pergunta> perguntas = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonBackReference
+    @Getter @Setter
+    private Usuario usuario;
+
     public Modelo() {}
-    public Modelo(UUID id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis) {
+    public Modelo(UUID id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, Usuario usuario) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.plataformasDisponiveis = plataformasDisponiveis;
+        this.usuario = usuario;
     }
 }

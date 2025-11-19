@@ -2,7 +2,10 @@ package org.cesar.br.projetos.Entidades;
 
 import java.time.LocalDate;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,14 +17,17 @@ public class Usuario implements Serializable{
 	@Getter
 	private Long id;
 
-	@Getter @Setter private String nome;
+    @Getter @Setter private String nome;
 	@Getter @Setter private String email;
 	@Getter @Setter private String senha;
 	@Getter private LocalDate dataCadastro;
+
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+	@Getter @Setter
+	private List<Modelo> modelos = new ArrayList<>();
 	
-	public Usuario(){}
-	
-	public Usuario(String nome, String email, String senha, LocalDate dataCadastro){
+	public Usuario(){}	public Usuario(String nome, String email, String senha, LocalDate dataCadastro){
 		this.nome = nome;
 		this.email = email;
 		this.senha = senha;

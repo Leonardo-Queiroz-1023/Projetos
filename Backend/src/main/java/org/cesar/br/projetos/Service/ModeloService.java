@@ -3,6 +3,7 @@ package org.cesar.br.projetos.Service;
 import org.cesar.br.projetos.Repository.ModeloRepository;
 import org.cesar.br.projetos.Entidades.Modelo;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
+import org.cesar.br.projetos.Entidades.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,8 @@ public class ModeloService {
     // CREATE - Lógica de negócio: criar modelo
     // ---------------------------------------------------------------------
     public Modelo criarModelo(String nome, String descricao,
-                               PlataformasDeEnvios plataformasDisponiveis) {
+                               PlataformasDeEnvios plataformasDisponiveis,
+                               Usuario usuario) {
 
         // Validação: nome obrigatório
         if (nome == null || nome.trim().isEmpty()) {
@@ -37,41 +39,50 @@ public class ModeloService {
             return null;
         }
 
+        // Validação: usuário obrigatório
+        if (usuario == null) {
+            return null;
+        }
+
         // Criação com UUID automático e persistência
-        Modelo modelo = new Modelo(UUID.randomUUID(), nome, descricao, plataformasDisponiveis);
+        Modelo modelo = new Modelo(UUID.randomUUID(), nome, descricao, plataformasDisponiveis, usuario);
         return modeloRepository.save(modelo);
     }
 
     // ---------------------------------------------------------------------
-    // READ - Lógica de negócio: listar todos os modelos
+    // READ - Lógica de negócio: listar modelos de um usuário
     // ---------------------------------------------------------------------
-    public List<Modelo> listarModelos() {
-        return modeloRepository.findAll();
+    public List<Modelo> listarModelos(Usuario usuario) {
+        if (usuario == null) {
+            return List.of();
+        }
+        return modeloRepository.findByUsuario(usuario);
     }
 
     // ---------------------------------------------------------------------
-    // READ - Lógica de negócio: buscar modelo por ID
+    // READ - Lógica de negócio: buscar modelo por ID (apenas do usuário)
     // ---------------------------------------------------------------------
-    public Modelo buscarModeloPorId(UUID id) {
-        if (id == null) {
+    public Modelo buscarModeloPorId(UUID id, Usuario usuario) {
+        if (id == null || usuario == null) {
             return null;
         }
-        return modeloRepository.findById(id).orElse(null);
+        return modeloRepository.findByIdAndUsuario(id, usuario).orElse(null);
     }
 
     // ---------------------------------------------------------------------
-    // UPDATE - Lógica de negócio: atualizar modelo
+    // UPDATE - Lógica de negócio: atualizar modelo (apenas do usuário)
     // ---------------------------------------------------------------------
     public boolean atualizarModelo(UUID id, String nome, String descricao,
-                                   PlataformasDeEnvios plataformasDisponiveis) {
+                                   PlataformasDeEnvios plataformasDisponiveis,
+                                   Usuario usuario) {
 
-        // Validação: ID obrigatório
-        if (id == null) {
+        // Validação: ID e usuário obrigatórios
+        if (id == null || usuario == null) {
             return false;
         }
 
-        // Busca o modelo existente
-        Modelo existente = modeloRepository.findById(id).orElse(null);
+        // Busca o modelo existente (apenas do usuário)
+        Modelo existente = modeloRepository.findByIdAndUsuario(id, usuario).orElse(null);
         if (existente == null) {
             return false;
         }
@@ -93,22 +104,23 @@ public class ModeloService {
     }
 
     // ---------------------------------------------------------------------
-    // DELETE - Lógica de negócio: deletar modelo
+    // DELETE - Lógica de negócio: deletar modelo (apenas do usuário)
     // ---------------------------------------------------------------------
-    public boolean deletarModelo(UUID id) {
+    public boolean deletarModelo(UUID id, Usuario usuario) {
 
-        // Validação: ID obrigatório
-        if (id == null) {
+        // Validação: ID e usuário obrigatórios
+        if (id == null || usuario == null) {
             return false;
         }
 
-        // Verifica se o modelo existe antes de deletar
-        if (!modeloRepository.existsById(id)) {
+        // Verifica se o modelo existe e pertence ao usuário
+        Modelo modelo = modeloRepository.findByIdAndUsuario(id, usuario).orElse(null);
+        if (modelo == null) {
             return false;
         }
 
         // Deleção
-        modeloRepository.deleteById(id);
+        modeloRepository.delete(modelo);
         return true;
     }
 }

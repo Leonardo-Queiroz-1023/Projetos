@@ -41,7 +41,7 @@ public class ModeloMediator {
         // Evita duplicação de ID
         if (modeloRepository.existsById(id)) return false;
 
-        Modelo modelo = new Modelo(id, nome, descricao, plataformasDisponiveis);
+        Modelo modelo = new Modelo(id, nome, descricao, plataformasDisponiveis, null);
         modeloRepository.save(modelo);
         return true;
     }

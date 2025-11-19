@@ -37,6 +37,10 @@ function Login() {
         if (data.token) {
           localStorage.setItem("token", data.token);
         }
+        // Salvar usuarioId retornado pelo backend
+        if (data.usuarioId) {
+          localStorage.setItem("usuarioId", data.usuarioId);
+        }
         navigate("/menu-central", { replace: true });
       } else {
         setMessage("❌ Erro: " + (data.error || "Credenciais inválidas"));
