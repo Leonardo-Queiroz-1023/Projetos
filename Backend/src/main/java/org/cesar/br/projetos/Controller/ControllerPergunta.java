@@ -1,30 +1,40 @@
 package org.cesar.br.projetos.Controller;
 
 import org.cesar.br.projetos.Entidades.Pergunta;
-import org.cesar.br.projetos.Mediator.PerguntasMediator;
+import org.cesar.br.projetos.Service.PerguntaService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/perguntas")
-public class ControllerPerguntas {
+public class ControllerPergunta {
 
-    private final PerguntasMediator mediator = PerguntasMediator.getInstancia();
+    private final PerguntaService perguntaService;
+
+    @Autowired
+    public ControllerPergunta(PerguntaService perguntaService) {
+        this.perguntaService = perguntaService;
+    }
 
     // ---------------------------------------------------------
     // ADICIONAR PERGUNTA
     // ---------------------------------------------------------
     @PostMapping("/adicionar/{modeloId}")
     public ResponseEntity<?> adicionarPergunta(
-            @PathVariable long modeloId,
-            @RequestBody Pergunta pergunta) {
+            @PathVariable UUID modeloId,
+            @RequestBody Map<String, String> body) {
 
-        boolean adicionada = mediator.adicionarPergunta(modeloId, pergunta);
+        String questao = body.get("questao");
+        Pergunta novaPergunta = new Pergunta(questao);
+        
+        boolean adicionada = perguntaService.adicionarPergunta(modeloId, novaPergunta);
 
         if (adicionada)
             return ResponseEntity.ok(Map.of("message", "Pergunta adicionada com sucesso!"));
@@ -36,9 +46,9 @@ public class ControllerPerguntas {
     // LISTAR PERGUNTAS
     // ---------------------------------------------------------
     @GetMapping("/listar/{modeloId}")
-    public ResponseEntity<?> listarPerguntas(@PathVariable long modeloId) {
+    public ResponseEntity<?> listarPerguntas(@PathVariable UUID modeloId) {
 
-        List<Pergunta> lista = mediator.listarPerguntas(modeloId);
+        List<Pergunta> lista = perguntaService.listarPerguntas(modeloId);
 
         if (lista == null)
             return ResponseEntity.status(404).body(Map.of("error", "Modelo não encontrado."));
@@ -51,13 +61,13 @@ public class ControllerPerguntas {
     // ---------------------------------------------------------
     @PutMapping("/atualizar/{modeloId}/{perguntaId}")
     public ResponseEntity<?> atualizarPergunta(
-            @PathVariable long modeloId,
-            @PathVariable long perguntaId,
+            @PathVariable UUID modeloId,
+            @PathVariable UUID perguntaId,
             @RequestBody Map<String, String> body) {
 
         String novoTexto = body.get("texto");
 
-        boolean atualizado = mediator.atualizarPergunta(modeloId, perguntaId, novoTexto);
+        boolean atualizado = perguntaService.atualizarPergunta(modeloId, perguntaId, novoTexto);
 
         if (atualizado)
             return ResponseEntity.ok(Map.of("message", "Pergunta atualizada com sucesso!"));
@@ -70,10 +80,10 @@ public class ControllerPerguntas {
     // ---------------------------------------------------------
     @DeleteMapping("/remover/{modeloId}/{perguntaId}")
     public ResponseEntity<?> remover(
-            @PathVariable long modeloId,
-            @PathVariable long perguntaId) {
+            @PathVariable UUID modeloId,
+            @PathVariable UUID perguntaId) {
 
-        boolean removido = mediator.removerPergunta(modeloId, perguntaId);
+        boolean removido = perguntaService.removerPergunta(modeloId, perguntaId);
 
         if (removido)
             return ResponseEntity.ok(Map.of("message", "Pergunta removida com sucesso!"));

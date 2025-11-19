@@ -1,7 +1,8 @@
 package org.cesar.br.projetos.Controller;
 
 import org.cesar.br.projetos.Entidades.Usuario;
-import org.cesar.br.projetos.Mediator.UsuarioMediator;
+import org.cesar.br.projetos.Service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +13,12 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class ControllerLogin {
 
-    private final UsuarioMediator mediator = UsuarioMediator.getInstancia();
+    private final UsuarioService usuarioService;
+
+    @Autowired
+    public ControllerLogin(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     // -------------------------------
     // REGISTRO DE USUÁRIO
@@ -20,16 +26,22 @@ public class ControllerLogin {
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
         try {
-            mediator.registrarUsuario(
+            boolean sucesso = usuarioService.registrarUsuario(
                     usuario.getNome(),
                     usuario.getEmail(),
                     usuario.getSenha(),
                     java.time.LocalDate.now()
             );
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Usuário registrado com sucesso!"
-            ));
+            if (sucesso) {
+                return ResponseEntity.ok(Map.of(
+                        "message", "Usuário registrado com sucesso!"
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "Usuário já existe ou dados inválidos!"
+                ));
+            }
 
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -43,12 +55,12 @@ public class ControllerLogin {
     // -------------------------------
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        boolean ok = mediator.autenticarSenha(
+        boolean autenticado = usuarioService.autenticarUsuario(
                 usuario.getNome(),
                 usuario.getSenha()
         );
 
-        if (ok) {
+        if (autenticado) {
             return ResponseEntity.ok(Map.of(
                     "message", "Login bem-sucedido!"
             ));
@@ -59,11 +71,4 @@ public class ControllerLogin {
         }
     }
 
-    // -------------------------------
-    // TESTE
-    // -------------------------------
-    @GetMapping("/teste")
-    public String teste() {
-        return "Backend funcionando!";
-    }
 }

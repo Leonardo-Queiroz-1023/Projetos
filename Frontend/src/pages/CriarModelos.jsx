@@ -1,283 +1,293 @@
 // src/pages/CriarModelos.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 import api from "../services/api";
 
 export default function CriarModelos() {
-  const navigate = useNavigate();
-  const [nome, setNome] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [plataforma, setPlataforma] = useState("");
-  const [pergunta, setPergunta] = useState("");
-  const [imagem, setImagem] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [message, setMessage] = useState("");
+    const navigate = useNavigate();
 
-  const logged = localStorage.getItem("logged") === "true";
-  const fileInputRef = useRef(null);
+    const [nome, setNome] = useState("");
+    const [descricao, setDescricao] = useState("");
+    const [plataforma, setPlataforma] = useState("");
 
-  // se estiver testando sem login, deixa comentado
-  // useEffect(() => {
-  //   if (!logged) {
-  //     navigate("/login?msg=Logue%20antes%20de%20criar%20modelos", {
-  //       replace: true,
-  //     });
-  //   }
-  // }, [logged, navigate]);
+    // perguntas adicionadas antes de salvar o modelo
+    const [perguntas, setPerguntas] = useState([]);
+    const [perguntaAtual, setPerguntaAtual] = useState("");
+    const [showPerguntaBox, setShowPerguntaBox] = useState(false);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImagem(file);
-      setMessage("");
-    }
-  };
+    const [message, setMessage] = useState("");
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
+    const adicionarPergunta = () => {
+        if (!perguntaAtual.trim()) return;
 
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
+        const novaPergunta = {
+            id: Date.now(), // apenas para controle no front
+            texto: perguntaAtual,
+        };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      setImagem(file);
-      setMessage("");
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const payload = {
-      nome,
-      descricao,
-      plataformasDisponiveis: plataforma,
-      pergunta,
-      imagemNome: imagem ? imagem.name : null,
+        setPerguntas([...perguntas, novaPergunta]);
+        setPerguntaAtual("");
+        setShowPerguntaBox(false);
     };
 
-    try {
-      await api.createModelo(payload);
-      setMessage("✅ Modelo criado no backend!");
-      setNome("");
-      setDescricao("");
-      setPlataforma("");
-      setPergunta("");
-      setImagem(null);
-    } catch (error) {
-      console.error("Erro ao criar modelo:", error);
-      setMessage("❌ Falha ao criar modelo. Verifique o backend.");
-    }
-  };
+    const removerPergunta = (id) => {
+        setPerguntas(perguntas.filter((p) => p.id !== id));
+    };
 
-  return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 50px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <PerimeterBox style={{ width: "420px", textAlign: "left" }}>
-        <h2 style={{ marginBottom: 20 }}>Criar modelo de pesquisa</h2>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>
-            Nome do modelo
-            <input
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              style={styles.input}
-              placeholder="Ex: Pesquisa de satisfação pós-atendimento"
-              required
-            />
-          </label>
+        try {
+            // 1. Criar o modelo sem perguntas
+            const modeloPayload = {
+                nome,
+                descricao,
+                plataformasDisponiveis: plataforma,
+            };
 
-          <label style={styles.label}>
-            Descrição
-            <textarea
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              style={styles.textarea}
-              placeholder="Breve descrição do objetivo deste modelo"
-              rows={3}
-              required
-            />
-          </label>
+            console.log("📤 Criando modelo:", modeloPayload);
+            const result = await api.createModelo(modeloPayload);
+            console.log("✅ Modelo criado:", result);
 
-          <label style={styles.label}>
-            Plataforma de envio
-            <select
-              value={plataforma}
-              onChange={(e) => setPlataforma(e.target.value)}
-              style={styles.select}
-              required
-            >
-              <option value="">Selecione uma plataforma</option>
-              <option value="WHATSAPP">WhatsApp</option>
-              <option value="EMAIL">E-mail</option>
-              <option value="SMS">SMS</option>
-              <option value="APP">Aplicativo</option>
-            </select>
-          </label>
+            // 2. Se houver perguntas, adicionar uma por uma
+            if (perguntas.length > 0 && result.id) {
+                console.log("➕ Adicionando", perguntas.length, "perguntas...");
+                for (const p of perguntas) {
+                    await api.addPerguntaToModelo(result.id, { questao: p.texto });
+                }
+                console.log("✅ Todas as perguntas adicionadas!");
+            }
 
-          <label style={styles.label}>
-            Pergunta principal
-            <textarea
-              value={pergunta}
-              onChange={(e) => setPergunta(e.target.value)}
-              style={styles.textarea}
-              placeholder="Texto da pergunta que será feita ao respondente"
-              rows={2}
-              required
-            />
-          </label>
+            setMessage("✅ Modelo criado com sucesso!");
+            
+            // Aguarda e redireciona para listar modelos
+            setTimeout(() => {
+                navigate("/modelos");
+            }, 1000);
+        } catch (error) {
+            console.error("❌ Erro ao criar:", error);
+            setMessage("❌ Erro ao criar modelo: " + error.message);
+        }
+    };
 
-          <label style={styles.label}>
-            Imagem de referência (opcional)
-            <div
-              style={{
-                ...styles.dropzone,
-                ...(isDragging ? styles.dropzoneActive : {}),
-              }}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() =>
-                fileInputRef.current && fileInputRef.current.click()
-              }
-            >
-              <p>Arraste uma imagem aqui ou clique para selecionar</p>
-              {imagem && (
-                <p style={styles.fileName}>
-                  Arquivo selecionado: {imagem.name}
-                </p>
-              )}
-            </div>
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
-          </label>
+    return (
+        <div
+            style={{
+                minHeight: "calc(100vh - 50px)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+            }}
+        >
+            <PerimeterBox style={{ width: 450 }}>
+                <h2 style={{ marginBottom: 20 }}>Criar modelo</h2>
 
-          <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
-            <button type="submit" style={styles.buttonPrimary}>
-              Salvar modelo
-            </button>
-            <button
-              type="button"
-              style={styles.buttonSecondary}
-              onClick={() => navigate("/modelos")}
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
+                <form onSubmit={handleSubmit} style={styles.form}>
+                    <label style={styles.label}>
+                        Nome do modelo
+                        <input
+                            type="text"
+                            value={nome}
+                            onChange={(e) => setNome(e.target.value)}
+                            style={styles.input}
+                            required
+                        />
+                    </label>
 
-        {message && <p style={styles.message}>{message}</p>}
-      </PerimeterBox>
-    </div>
-  );
+                    <label style={styles.label}>
+                        Descrição
+                        <textarea
+                            value={descricao}
+                            onChange={(e) => setDescricao(e.target.value)}
+                            style={styles.textarea}
+                            rows={3}
+                            required
+                        />
+                    </label>
+
+                    <label style={styles.label}>
+                        Plataforma de envio
+                        <select
+                            value={plataforma}
+                            onChange={(e) => setPlataforma(e.target.value)}
+                            style={styles.select}
+                            required
+                        >
+                            <option value="">Selecione…</option>
+                            <option value="WHATSAPP">WhatsApp</option>
+                            <option value="EMAIL">Email</option>
+                        </select>
+                    </label>
+
+                    {/* ---- LISTA DE PERGUNTAS ADICIONADAS ---- */}
+                    <div style={{ marginTop: 10 }}>
+                        <p style={{ marginBottom: 6 }}>Perguntas adicionadas:</p>
+                        {perguntas.length === 0 && (
+                            <p style={{ fontSize: 13, opacity: 0.6 }}>Nenhuma pergunta ainda.</p>
+                        )}
+
+                        {perguntas.map((p) => (
+                            <div key={p.id} style={styles.perguntaItem}>
+                                <span>{p.texto}</span>
+                                <button
+                                    type="button"
+                                    style={styles.removeBtn}
+                                    onClick={() => removerPergunta(p.id)}
+                                >
+                                    X
+                                </button>
+                            </div>
+                        ))}
+
+                        <button
+                            type="button"
+                            style={styles.addPerguntaBtn}
+                            onClick={() => setShowPerguntaBox(true)}
+                        >
+                            + Adicionar pergunta
+                        </button>
+                    </div>
+
+                    <button type="submit" style={styles.buttonPrimary}>
+                        Salvar modelo
+                    </button>
+
+                    <button
+                        type="button"
+                        style={styles.buttonSecondary}
+                        onClick={() => navigate("/modelos")}
+                    >
+                        Cancelar
+                    </button>
+                </form>
+
+                {message && <p style={styles.message}>{message}</p>}
+
+                {/* ------------ MODAL/BOX PARA ADICIONAR PERGUNTA ----------- */}
+                {showPerguntaBox && (
+                    <div style={styles.modalOverlay}>
+                        <div style={styles.modalBox}>
+                            <h3>Adicionar pergunta</h3>
+
+                            <textarea
+                                value={perguntaAtual}
+                                onChange={(e) => setPerguntaAtual(e.target.value)}
+                                style={styles.textarea}
+                                placeholder="Digite a pergunta…"
+                                rows={3}
+                            />
+
+                            <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+                                <button style={styles.buttonPrimary} onClick={adicionarPergunta}>
+                                    Adicionar
+                                </button>
+                                <button
+                                    style={styles.buttonSecondary}
+                                    onClick={() => setShowPerguntaBox(false)}
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </PerimeterBox>
+        </div>
+    );
 }
 
 const styles = {
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    width: "100%",
-  },
-  label: {
-    display: "flex",
-    flexDirection: "column",
-    fontSize: "14px",
-    gap: "4px",
-  },
-  input: {
-    padding: "8px",
-    fontSize: "14px",
-    borderRadius: "6px",
-    border: "1px solid #444",
-    backgroundColor: "#222",
-    color: "#fff",
-  },
-  textarea: {
-    padding: "8px",
-    fontSize: "14px",
-    borderRadius: "6px",
-    border: "1px solid #444",
-    backgroundColor: "#222",
-    color: "#fff",
-    resize: "vertical",
-  },
-  select: {
-    padding: "8px",
-    fontSize: "14px",
-    borderRadius: "6px",
-    border: "1px solid #444",
-    backgroundColor: "#222",
-    color: "#fff",
-  },
-  dropzone: {
-    padding: "14px",
-    fontSize: "13px",
-    borderRadius: "8px",
-    border: "2px dashed #666",
-    backgroundColor: "#111",
-    color: "#ddd",
-    textAlign: "center",
-    cursor: "pointer",
-  },
-  dropzoneActive: {
-    borderColor: "#fff",
-    backgroundColor: "#222",
-  },
-  fileName: {
-    marginTop: "8px",
-    fontSize: "12px",
-    color: "#aaa",
-    wordBreak: "break-all",
-  },
-  buttonPrimary: {
-    flex: 1,
-    padding: "10px 16px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    background: "#000",
-    color: "#fff",
-    fontWeight: 500,
-  },
-  buttonSecondary: {
-    flex: 1,
-    padding: "10px 16px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    background: "#444",
-    color: "#fff",
-    fontWeight: 500,
-  },
-  message: {
-    marginTop: "16px",
-    fontSize: "14px",
-  },
+    form: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+    },
+    label: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+    },
+    input: {
+        padding: 8,
+        borderRadius: 6,
+        border: "1px solid #555",
+        background: "#111",
+        color: "#fff",
+    },
+    textarea: {
+        padding: 8,
+        borderRadius: 6,
+        border: "1px solid #555",
+        background: "#111",
+        color: "#fff",
+    },
+    select: {
+        padding: 8,
+        borderRadius: 6,
+        background: "#111",
+        color: "#fff",
+        border: "1px solid #555",
+    },
+    perguntaItem: {
+        background: "#222",
+        padding: "6px 10px",
+        borderRadius: 6,
+        color: "#fff",
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: 6,
+    },
+    removeBtn: {
+        background: "#b00",
+        color: "#fff",
+        border: "none",
+        padding: "2px 6px",
+        borderRadius: 4,
+        cursor: "pointer",
+    },
+    addPerguntaBtn: {
+        marginTop: 8,
+        padding: "8px 12px",
+        borderRadius: 8,
+        border: "1px dashed #888",
+        background: "transparent",
+        color: "#fff",
+        cursor: "pointer",
+    },
+    buttonPrimary: {
+        padding: 10,
+        background: "#000",
+        color: "#fff",
+        borderRadius: 8,
+        border: "none",
+        cursor: "pointer",
+    },
+    buttonSecondary: {
+        padding: 10,
+        background: "#444",
+        color: "#fff",
+        borderRadius: 8,
+        border: "none",
+        cursor: "pointer",
+    },
+    message: {
+        marginTop: 16,
+    },
+
+    // modal para perguntas
+    modalOverlay: {
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalBox: {
+        background: "#222",
+        padding: 20,
+        borderRadius: 12,
+        width: 350,
+    },
 };

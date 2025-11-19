@@ -1,25 +1,32 @@
 package org.cesar.br.projetos.Mediator;
 
-import org.cesar.br.projetos.Dao.ModeloDAO;
+import org.cesar.br.projetos.Repository.ModeloRepository;
 import org.cesar.br.projetos.Entidades.Modelo;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public class ModeloMediator {
 
-    private static ModeloDAO modeloD;
+    private static ModeloRepository modeloRepository;
     private static ModeloMediator instancia;
 
-    private ModeloMediator() {}
+    @Autowired
+    public ModeloMediator(ModeloRepository modeloRepository) {
+        ModeloMediator.modeloRepository = modeloRepository;
+    }
 
     public static ModeloMediator getInstancia() {
-        if (instancia == null) {
-            instancia = new ModeloMediator();
-            modeloD = new ModeloDAO();
-        }
         return instancia;
+    }
+
+    @Autowired
+    public void setInstancia() {
+        instancia = this;
     }
 
     // ---------------------------------------------------------------------
@@ -32,10 +39,10 @@ public class ModeloMediator {
         if (descricao == null || descricao.trim().isEmpty()) return false;
 
         // Evita duplicação de ID
-        if (modeloD.buscarPorId(id) != null) return false;
+        if (modeloRepository.existsById(id)) return false;
 
         Modelo modelo = new Modelo(id, nome, descricao, plataformasDisponiveis);
-        modeloD.salvar(modelo);
+        modeloRepository.save(modelo);
         return true;
     }
 
@@ -43,12 +50,12 @@ public class ModeloMediator {
     // READ
     // ---------------------------------------------------------------------
     public List<Modelo> listarModelos() {
-        return modeloD.listarTodos();
+        return modeloRepository.findAll();
     }
 
     public Modelo buscarModeloPorId(UUID id) {
         if (id == null) return null;
-        return modeloD.buscarPorId(id);
+        return modeloRepository.findById(id).orElse(null);
     }
 
     // ---------------------------------------------------------------------
@@ -58,14 +65,14 @@ public class ModeloMediator {
                                    PlataformasDeEnvios plataformasDisponiveis) {
 
         if (id == null) return false;
-        Modelo existente = modeloD.buscarPorId(id);
+        Modelo existente = modeloRepository.findById(id).orElse(null);
         if (existente == null) return false;
 
         if (nome != null && !nome.trim().isEmpty()) existente.setNome(nome);
         if (descricao != null && !descricao.trim().isEmpty()) existente.setDescricao(descricao);
         if (plataformasDisponiveis != null) existente.setPlataformasDisponiveis(plataformasDisponiveis);
 
-        modeloD.atualizar(existente);
+        modeloRepository.save(existente);
         return true;
     }
 
@@ -75,10 +82,9 @@ public class ModeloMediator {
     public boolean deletarModelo(UUID id) {
 
         if (id == null) return false;
-        Modelo existente = modeloD.buscarPorId(id);
-        if (existente == null) return false;
+        if (!modeloRepository.existsById(id)) return false;
 
-        modeloD.deletar(id);
+        modeloRepository.deleteById(id);
         return true;
     }
 }

@@ -4,9 +4,10 @@ import { Routes, Route, Link } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import MenuCentral from "./pages/MenuCentral.jsx";
-import Modelos from "./pages/Modelos.jsx";
-import Pesquisas from "./pages/Pesquisas.jsx";
+import ListarModelos from "./pages/ListarModelos.jsx";
 import CriarModelos from "./pages/CriarModelos.jsx";
+import EditarModelo from "./pages/EditarModelo.jsx";
+import Pesquisas from "./pages/Pesquisas.jsx";
 
 const navStyle = {
   padding: "12px 24px",
@@ -41,12 +42,9 @@ export default function App() {
           Menu Central
         </Link>
         <Link to="/modelos" style={navLinkStyle}>
-          Modelos
+          Listar Modelos
         </Link>
-        <Link to="/pesquisas" style={navLinkStyle}>
-          Pesquisas
-        </Link>
-        <Link to="/criar-modelos" style={navLinkStyle}>
+        <Link to="/modelos/criar" style={navLinkStyle}>
           Criar Modelos
         </Link>
       </nav>
@@ -56,9 +54,10 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/menu-central" element={<MenuCentral />} />
-        <Route path="/modelos" element={<Modelos />} />
+        <Route path="/modelos" element={<ListarModelos />} />
+        <Route path="/modelos/criar" element={<CriarModelos />} />
+        <Route path="/modelos/editar/:id" element={<EditarModelo />} />
         <Route path="/pesquisas" element={<Pesquisas />} />
-        <Route path="/criar-modelos" element={<CriarModelos />} />
         <Route path="*" element={<div>404</div>} />
       </Routes>
     </>

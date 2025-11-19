@@ -2,33 +2,39 @@ package org.cesar.br.projetos.Controller;
 
 import org.cesar.br.projetos.Entidades.Modelo;
 import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
-import org.cesar.br.projetos.Mediator.ModeloMediator;
+import org.cesar.br.projetos.Service.ModeloService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/modelos")
 public class ControllerModelo {
 
-    private final ModeloMediator mediator = ModeloMediator.getInstancia();
+    private final ModeloService modeloService;
+
+    @Autowired
+    public ControllerModelo(ModeloService modeloService) {
+        this.modeloService = modeloService;
+    }
 
     @PostMapping("/criar")
     public ResponseEntity<?> criar(@RequestBody Modelo modelo) {
 
-        boolean criado = mediator.criarModelo(
-                modelo.getId(),
+        Modelo criado = modeloService.criarModelo(
                 modelo.getNome(),
                 modelo.getDescricao(),
                 modelo.getPlataformasDisponiveis()
         );
 
-        if (criado) {
-            return ResponseEntity.ok(Map.of("message", "Modelo criado com sucesso!"));
+        if (criado != null) {
+            return ResponseEntity.ok(Map.of("message", "Modelo criado com sucesso!", "id", criado.getId().toString()));
         } else {
             return ResponseEntity.badRequest().body(Map.of("error", "Não foi possível criar o modelo."));
         }
@@ -36,12 +42,12 @@ public class ControllerModelo {
 
     @GetMapping("/listar")
     public ResponseEntity<List<Modelo>> listar() {
-        return ResponseEntity.ok(mediator.listarModelos());
+        return ResponseEntity.ok(modeloService.listarModelos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable long id) {
-        Modelo m = mediator.buscarModeloPorId(id);
+    public ResponseEntity<?> buscarPorId(@PathVariable UUID id) {
+        Modelo m = modeloService.buscarModeloPorId(id);
 
         if (m != null)
             return ResponseEntity.ok(m);
@@ -51,7 +57,7 @@ public class ControllerModelo {
 
     @PutMapping("/atualizar/{id}")
     public ResponseEntity<?> atualizar(
-            @PathVariable long id,
+            @PathVariable UUID id,
             @RequestBody Map<String, Object> body) {
 
         try {
@@ -65,7 +71,7 @@ public class ControllerModelo {
                 plataforma = PlataformasDeEnvios.valueOf(plataformaStr);
             }
 
-            boolean atualizado = mediator.atualizarModelo(id, nome, descricao, plataforma);
+            boolean atualizado = modeloService.atualizarModelo(id, nome, descricao, plataforma);
 
             if (atualizado)
                 return ResponseEntity.ok(Map.of("message", "Modelo atualizado com sucesso!"));
@@ -78,8 +84,8 @@ public class ControllerModelo {
     }
 
     @DeleteMapping("/deletar/{id}")
-    public ResponseEntity<?> deletar(@PathVariable long id) {
-        boolean removido = mediator.deletarModelo(id);
+    public ResponseEntity<?> deletar(@PathVariable UUID id) {
+        boolean removido = modeloService.deletarModelo(id);
 
         if (removido)
             return ResponseEntity.ok(Map.of("message", "Modelo deletado com sucesso!"));

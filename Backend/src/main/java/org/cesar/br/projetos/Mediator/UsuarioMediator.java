@@ -1,44 +1,51 @@
 package org.cesar.br.projetos.Mediator;
 
-import org.cesar.br.projetos.Dao.UsuarioDAO;
+import org.cesar.br.projetos.Repository.UsuarioRepository;
 import org.cesar.br.projetos.Entidades.Usuario;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
+@Component
 public class UsuarioMediator {
 	
-	private static UsuarioDAO usuarioD;
-	private static UsuarioMediator instancia; //não sei bem ainda a relação exata com o banco de dados
+	private static UsuarioRepository usuarioRepository;
+	private static UsuarioMediator instancia;
     // private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 	// aparentemente precisa encriptografar a senha mas precisa decidir melhor como depois
-	
-	private UsuarioMediator() {}
-	
-	public static UsuarioMediator getInstancia() {
-		if(instancia == null) {
-			instancia = new UsuarioMediator();
-			usuarioD = new UsuarioDAO();
-		}
-		return instancia;
+
+	@Autowired
+	public UsuarioMediator(UsuarioRepository usuarioRepository) {
+		UsuarioMediator.usuarioRepository = usuarioRepository;
 	}
 	
-	public boolean registrarUsuario(String nome,String email, String senha, LocalDate dataCadastro) {
+	public static UsuarioMediator getInstancia() {
+		return instancia;
+	}
+
+	@Autowired
+	public void setInstancia() {
+		instancia = this;
+	}
+	
+	public boolean registrarUsuario(String nome, String email, String senha, LocalDate dataCadastro) {
 	    // Verifica se o usuário já existe
-	    if (usuarioD.buscarUsuarioNome(nome) != null) {
+	    if (usuarioRepository.findByNome(nome).isPresent()) {
 	        return false; // usuário já cadastrado
 	    }
 	    Usuario usuario = new Usuario(nome, email, senha, dataCadastro);
 
-	    // Salva usando o DAO
-	    return usuarioD.salvarUsuario(usuario);    // falta verificação
-
+	    // Salva usando o Repository
+	    usuarioRepository.save(usuario);
+	    return true;
 	}
 	
 	public Usuario buscarUsuario(String nome) {
 		// as validações ainda não foram adicionadas
-		if(nome.trim().isEmpty() || nome == null) {
+		if(nome == null || nome.trim().isEmpty()) {
 			return null;
 		}
-		return usuarioD.buscarUsuarioNome(nome);
+		return usuarioRepository.findByNome(nome).orElse(null);
 	}
 
     public boolean autenticarSenha (String nome, String senha) {
@@ -46,7 +53,7 @@ public class UsuarioMediator {
             return false;
         }
 
-        Usuario usuario = usuarioD.buscarUsuarioNome(nome);
+        Usuario usuario = usuarioRepository.findByNome(nome).orElse(null);
 
         // CORREÇÃO 1: Verificar se o usuário foi encontrado
         if(usuario == null) {

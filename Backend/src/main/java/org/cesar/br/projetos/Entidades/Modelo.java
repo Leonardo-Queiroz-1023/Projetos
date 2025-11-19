@@ -1,5 +1,6 @@
 package org.cesar.br.projetos.Entidades;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,6 @@ import java.util.UUID;
 public class Modelo implements Serializable {
 
     @Id
-    @GeneratedValue
     @Getter
     private UUID id;
 
@@ -27,9 +27,10 @@ public class Modelo implements Serializable {
     private PlataformasDeEnvios plataformasDisponiveis;
 
     @OneToMany(mappedBy = "modelo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     @Getter @Setter
     private List<Pergunta> perguntas = new ArrayList<>();
-
+    public Modelo() {}
     public Modelo(UUID id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis) {
         this.id = id;
         this.nome = nome;

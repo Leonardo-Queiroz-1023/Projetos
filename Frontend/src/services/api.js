@@ -1,55 +1,113 @@
-const API_URL = 'http://localhost:8080';
+// src/services/api.js
+// Usando proxy do Vite - as requisições serão redirecionadas para http://localhost:8080
+const API_URL = '';
 
 async function fetchAPI(endpoint, options = {}) {
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+        });
 
-    const data = await response.json();
+        // Se a resposta for 204 No Content ou não tiver corpo, retorna null
+        if (response.status === 204 || response.headers.get("content-length") === "0") {
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+            }
+            return null;
+        }
 
-    if (!response.ok) {
-      throw new Error(data.error || `Erro HTTP: ${response.status}`);
+        // Tenta obter JSON
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            // Se falhar, tenta lançar o erro
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            // Se ok, retorna vazio se o corpo for ilegível
+            return null;
+        }
+
+
+        if (!response.ok) {
+            // Usa a mensagem de erro do corpo JSON
+            throw new Error(data.error || `Erro HTTP: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('❌ Erro na API:', error);
+        // Relança o erro para ser tratado no frontend
+        throw error;
     }
-
-    return data;
-  } catch (error) {
-    console.error('❌ Erro na API:', error);
-    throw error;
-  }
 }
 
 export const api = {
-  // Modelos
-  getModelos: () => fetchAPI('/modelos/listar'),
-  getModeloById: (id) => fetchAPI(`/modelos/${id}`),
-  createModelo: (modelo) => fetchAPI('/modelos/criar', {
-    method: 'POST',
-    body: JSON.stringify(modelo),
-  }),
-  updateNome: (id, nome) => fetchAPI(`/modelos/atualizar/nome/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ nome }),
-  }),
-  updateDescricao: (id, descricao) => fetchAPI(`/modelos/atualizar/descricao/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ descricao }),
-  }),
-  updatePlataforma: (id, plataforma) => fetchAPI(`/modelos/atualizar/plataforma/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ plataforma }),
-  }),
-  updatePergunta: (id, pergunta) => fetchAPI(`/modelos/atualizar/pergunta/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ descricao: pergunta }),
-  }),
-  deleteModelo: (id) => fetchAPI(`/modelos/deletar/${id}`, {
-    method: 'DELETE',
-  }),
+    // Modelos - Endpoints Mapeados para ControllerModelo
+    // IMPORTANTE: O backend usa UUID para IDs de Modelo e Pergunta
+
+    // POST /modelos/criar
+    createModelo: (modelo) => fetchAPI('/modelos/criar', {
+        method: 'POST',
+        body: JSON.stringify(modelo), // Envia o Modelo DTO completo (com ID UUID, nome, etc.)
+    }),
+
+    // GET /modelos/listar
+    listarModelos: () => fetchAPI('/modelos/listar'),
+    
+    getModelos: () => fetchAPI('/modelos/listar'), // Alias para compatibilidade
+
+    // GET /modelos/{id} - ID é UUID
+    getModeloById: (id) => fetchAPI(`/modelos/${id}`),
+
+    // PUT /modelos/atualizar/{id} - ID é UUID
+    updateModelo: (id, body) => fetchAPI(`/modelos/atualizar/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    }),
+
+    // DELETE /modelos/deletar/{id} - ID é UUID
+    deleteModelo: (id) => fetchAPI(`/modelos/deletar/${id}`, {
+        method: 'DELETE',
+    }),
+
+    // Perguntas - Endpoints Mapeados para ControllerPerguntas
+
+    // POST /perguntas/adicionar/{modeloId} - modeloId é UUID
+    // Envia um objeto Pergunta DTO completo.
+    addPerguntaToModelo: (modeloId, perguntaPayload) => fetchAPI(`/perguntas/adicionar/${modeloId}`, {
+        method: 'POST',
+        body: JSON.stringify(perguntaPayload), // Envia { "questao": "..." }
+    }),
+
+    // PUT /perguntas/atualizar/{modeloId}/{perguntaId} - Ambos IDs são UUID
+    // O 'texto' deve ser enviado no body.
+    updatePergunta: (modeloId, perguntaId, novoTexto) => fetchAPI(`/perguntas/atualizar/${modeloId}/${perguntaId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ texto: novoTexto }),
+    }),
+
+    // DELETE /perguntas/remover/{modeloId}/{perguntaId} - Ambos IDs são UUID
+    deletePergunta: (modeloId, perguntaId) => fetchAPI(`/perguntas/remover/${modeloId}/${perguntaId}`, {
+        method: 'DELETE',
+    }),
+
+    // Login e Registro - Endpoints Mapeados para ControllerLogin
+
+    registerUser: (usuario) => fetchAPI('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(usuario),
+    }),
+
+    login: (usuario) => fetchAPI('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(usuario),
+    }),
 };
 
 export default api;
