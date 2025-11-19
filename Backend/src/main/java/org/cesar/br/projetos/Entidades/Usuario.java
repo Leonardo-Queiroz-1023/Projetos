@@ -17,7 +17,10 @@ public class Usuario implements Serializable{
 	@Getter
 	private Long id;
 
+    @Column(unique = true, nullable = false)
     @Getter @Setter private String nome;
+    
+	@Column(unique = true, nullable = false)
 	@Getter @Setter private String email;
 	@Getter @Setter private String senha;
 	@Getter private LocalDate dataCadastro;

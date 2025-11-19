@@ -42,8 +42,12 @@ EXPOSE ${PORT:-8080}
 # Copia o JAR
 COPY --from=backend-builder /app/backend/target/*.jar ./app.jar
 
-# ✅ Configurações do banco via ENV (Render permite sobrescrever)
-ENV SPRING_DATASOURCE_URL=jdbc:h2:mem:projetosdb
+# Cria diretório para persistência do H2
+RUN mkdir -p /data
+VOLUME /data
+
+# ✅ Configurações do banco via ENV - File-based H2 para persistência
+ENV SPRING_DATASOURCE_URL=jdbc:h2:file:/data/projetosdb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
 ENV SPRING_DATASOURCE_USERNAME=sa
 ENV SPRING_DATASOURCE_PASSWORD=
 ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver

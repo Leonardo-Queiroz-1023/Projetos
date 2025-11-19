@@ -26,18 +26,23 @@ public class UsuarioService {
 
         // Validação: campos obrigatórios
         if (nome == null || nome.trim().isEmpty()) {
-            return false;
+            throw new RuntimeException("Nome é obrigatório");
         }
         if (email == null || email.trim().isEmpty()) {
-            return false;
+            throw new RuntimeException("Email é obrigatório");
         }
         if (senha == null || senha.trim().isEmpty()) {
-            return false;
+            throw new RuntimeException("Senha é obrigatória");
         }
 
-        // Regra de negócio: verifica se o usuário já existe
+        // Regra de negócio: verifica se o nome já existe
         if (usuarioRepository.findByNome(nome).isPresent()) {
-            return false; // usuário já cadastrado
+            throw new RuntimeException("Nome de usuário já existe");
+        }
+        
+        // Regra de negócio: verifica se o email já existe
+        if (usuarioRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email já cadastrado");
         }
 
         // Criação do usuário
