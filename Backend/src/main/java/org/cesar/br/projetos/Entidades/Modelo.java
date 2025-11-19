@@ -1,16 +1,20 @@
 package org.cesar.br.projetos.Entidades;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import lombok.Getter;
-import lombok.Setter;
-
+@Entity
 public class Modelo implements Serializable {
 
+    @Id
+    @GeneratedValue
     @Getter
-    private final long id;
+    private UUID id;
 
     @Getter @Setter
     private String nome;
@@ -19,38 +23,17 @@ public class Modelo implements Serializable {
     private String descricao;
 
     @Getter @Setter
+    @Enumerated(EnumType.STRING)
     private PlataformasDeEnvios plataformasDisponiveis;
 
+    @OneToMany(mappedBy = "modelo", cascade = CascadeType.ALL, orphanRemoval = true)
     @Getter @Setter
-    private List <Perguntas> perguntas = new ArrayList<>();
+    private List<Pergunta> perguntas = new ArrayList<>();
 
-    public Modelo() {
-        this.id = 0;
-        this.perguntas = new ArrayList<>();
-    }
-
-    public Modelo(long id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, String pergunta) {
+    public Modelo(UUID id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.plataformasDisponiveis = plataformasDisponiveis;
-        this.perguntas = new ArrayList<>();
     }
-    
-    public void adicionarPergunta(Perguntas pergunta) {
-    	perguntas.add(pergunta);
-    } 
-    
-    public Perguntas selecionarPergunta(int numeroPerguntas) {
-    	int cont = 1;
-    	for(Perguntas p : perguntas) {
-    		if(cont == numeroPerguntas) {
-    			return p;
-    		}
-    		cont++;
-    	}
-    	return null;
-    }
-    
-
 }

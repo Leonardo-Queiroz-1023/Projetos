@@ -1,49 +1,46 @@
 package org.cesar.br.projetos.Dao;
 
-import org.cesar.br.projetos.Entidades.Modelo;
-import org.cesar.br.projetos.Entidades.Perguntas;
 import java.util.ArrayList;
 import java.util.List;
+import Java.util.UUID;
+import org.cesar.br.projetos.Entidades.Pergunta;
 
-public class PerguntasDAO {
-    private static final List<Perguntas> listaPerguntas = new ArrayList<>();
-    
-    public boolean salvar(Perguntas perguntas) {
-    	if (perguntas == null) {
-    		return false;
-    	}
-    	listaPerguntas.add(perguntas);
-    	return true;
+public class PerguntaDAO {
+
+    private static final List<Pergunta> perguntas = new ArrayList<>();
+
+    // CREATE - adicionar pergunta
+    public void salvar(Pergunta pergunta) {
+        perguntas.add(pergunta);
     }
-    
-    public List<Perguntas> listarTodas(){
-    	return new ArrayList<> (listaPerguntas);
+
+    // READ ALL - listar perguntas
+    public List<Pergunta> listarTodas() {
+        return new ArrayList<>(perguntas);
     }
-    
-    public Perguntas buscarPorId(long id) {
-        for (Perguntas perguntas : listaPerguntas) {
-            if (perguntas.getId() == id) {
-                return perguntas;
+
+    // READ BY ID
+    public Pergunta buscarPorId(UUID id) {
+        for (Pergunta p : perguntas) {
+            if (p.getId() == id) {
+                return p;
             }
         }
-        
         return null;
     }
-    
-    public boolean deletar(long id) {
-        Perguntas perguntas = buscarPorId(id);
-        if (perguntas == null) {
-            return false;
+
+    // UPDATE - substituir pergunta
+    public void atualizar(Pergunta perguntaAtualizada) {
+        for (int i = 0; i < perguntas.size(); i++) {
+            if (perguntas.get(i).getId() == perguntaAtualizada.getId()) {
+                perguntas.set(i, perguntaAtualizada);
+                return;
+            }
         }
-        return listaPerguntas.remove(perguntas);
-    }
-    
-    public boolean atualizarDescricao(long id, String novaDescricao) {
-        Perguntas p = buscarPorId(id);
-        if (p == null) return false;
-
-        p.setDescricao(novaDescricao);
-        return true;
     }
 
+    // DELETE - remover pergunta
+    public void deletar(UUID id) {
+        perguntas.removeIf(p -> p.getId() == id);
+    }
 }

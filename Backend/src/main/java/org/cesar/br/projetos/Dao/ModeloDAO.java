@@ -2,46 +2,46 @@ package org.cesar.br.projetos.Dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.cesar.br.projetos.Entidades.Modelo;
-import org.cesar.br.projetos.Entidades.PlataformasDeEnvios;
+import java.util.UUID;
 
+import org.cesar.br.projetos.Entidades.Modelo;
 
 public class ModeloDAO {
 
     private static final List<Modelo> modelos = new ArrayList<>();
 
-    // adicionar o modelo
+    // CREATE
     public void salvar(Modelo modelo) {
         modelos.add(modelo);
     }
 
-    // ler todos os modelos
+    // READ ALL
     public List<Modelo> listarTodos() {
         return new ArrayList<>(modelos);
     }
 
-    // ler o id unico
-    public Modelo buscarPorId(long id) {
-        for (int i = 0; i < modelos.size(); i++) {
-            if (modelos.get(i).getId() == id) {
-                return modelos.get(i);
+    // READ BY ID
+    public Modelo buscarPorId(UUID id) {
+        for (Modelo modelo : modelos) {
+            if (modelo.getId().equals(id)) {
+                return modelo;
             }
         }
         return null;
     }
 
-    //  substitui o objeto inteiro pelo atualizado
+    // UPDATE
     public void atualizar(Modelo modeloAtualizado) {
         for (int i = 0; i < modelos.size(); i++) {
-            if (modelos.get(i).getId() == modeloAtualizado.getId()) {
+            if (modelos.get(i).getId().equals(modeloAtualizado.getId())) {
                 modelos.set(i, modeloAtualizado);
                 return;
             }
         }
     }
 
-    // deletar um modelo
-    public void deletar(long id) {
-        modelos.removeIf(m -> m.getId() == id);
+    // DELETE
+    public void deletar(UUID id) {
+        modelos.removeIf(m -> m.getId().equals(id));
     }
 }
