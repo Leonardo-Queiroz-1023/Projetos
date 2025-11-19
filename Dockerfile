@@ -25,26 +25,11 @@ RUN mvn dependency:go-offline -B || true
 # Copia TODO o código fonte
 COPY Backend/src ./src
 
-# ✅ VERIFICAÇÃO: Lista os arquivos resources para debug
-RUN echo "=== Verificando resources ===" && \
-    ls -la src/main/resources/ && \
-    cat src/main/resources/application.properties
-
 # Copia o frontend build para static
 COPY --from=frontend-builder /app/frontend/dist ./src/main/resources/static
 
-# ✅ VERIFICAÇÃO: Confirma que application.properties ainda existe
-RUN echo "=== Após copiar frontend ===" && \
-    ls -la src/main/resources/ && \
-    test -f src/main/resources/application.properties && echo "✓ application.properties encontrado" || echo "✗ application.properties PERDIDO"
-
 # Build do JAR
 RUN mvn clean package -DskipTests
-
-# ✅ VERIFICAÇÃO: Verifica se application.properties está no JAR
-RUN echo "=== Verificando JAR ===" && \
-    ls -la target/*.jar && \
-    jar tf target/*.jar | grep application.properties && echo "✓ application.properties no JAR" || echo "✗ application.properties NÃO está no JAR"
 
 
 # Estágio 3: Imagem Final de Produção
@@ -55,6 +40,16 @@ EXPOSE 8080
 
 # Copia o JAR
 COPY --from=backend-builder /app/backend/target/*.jar ./app.jar
+
+# ✅ SOLUÇÃO: Configura o banco via variáveis de ambiente
+# Isso sobrescreve qualquer problema com application.properties
+ENV SPRING_DATASOURCE_URL=jdbc:h2:mem:projetosdb
+ENV SPRING_DATASOURCE_USERNAME=sa
+ENV SPRING_DATASOURCE_PASSWORD=
+ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
+ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
+ENV SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+ENV SPRING_H2_CONSOLE_ENABLED=false
 
 # Comando de inicialização
 ENTRYPOINT ["java", "-jar", "app.jar"]
