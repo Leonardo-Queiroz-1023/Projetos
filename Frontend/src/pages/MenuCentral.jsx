@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 
 export default function MenuCentral() {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "Usuário";
+  const [showPesquisasMenu, setShowPesquisasMenu] = useState(false);
 
   // se estiver testando sem login, deixa comentado
   // useEffect(() => {
@@ -21,7 +22,7 @@ export default function MenuCentral() {
     navigate("/login", { replace: true });
   }
 
-  return (
+return (
     <div
       style={{
         minHeight: "calc(100vh - 50px)",
@@ -39,9 +40,44 @@ export default function MenuCentral() {
           <button onClick={() => navigate("/modelos")} style={btn}>
             Modelos
           </button>
-          <button onClick={() => navigate("/pesquisas")} style={btn}>
-            Pesquisas
-          </button>
+
+          {/* Botão Pesquisas com Dropdown */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowPesquisasMenu(!showPesquisasMenu)}
+              style={{ ...btn, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              Pesquisas
+              <span style={{ fontSize: "12px" }}>
+                {showPesquisasMenu ? "▲" : "▼"}
+              </span>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showPesquisasMenu && (
+              <div style={dropdownMenu}>
+                <button
+                  onClick={() => navigate("/lancar-pesquisas")}
+                  style={dropdownItem}
+                >
+                  📤 Lançar pesquisas
+                </button>
+                <button
+                  onClick={() => navigate("/pesquisas-em-andamento")}
+                  style={dropdownItem}
+                >
+                  🔄 Visualizar pesquisas em andamento
+                </button>
+                <button
+                  onClick={() => navigate("/pesquisas-finalizadas")}//ainda não existe
+                  style={dropdownItem}
+                >
+                  ✅ Visualizar pesquisas finalizadas
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={logout}
             style={{ ...btn, marginTop: 10, background: "#333" }}
@@ -63,4 +99,33 @@ const btn = {
   background: "#000",
   color: "#fff",
   margin: "0 auto",
+};
+
+const dropdownMenu = {
+  position: "absolute",
+  top: "100%",
+  left: "50%",
+  transform: "translateX(-50%)",
+  marginTop: "8px",
+  background: "#fff",
+  border: "2px solid #000",
+  borderRadius: "8px",
+  padding: "8px",
+  minWidth: "240px",
+  zIndex: 1000,
+  boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+};
+
+const dropdownItem = {
+  width: "100%",
+  padding: "10px 16px",
+  borderRadius: "6px",
+  border: "none",
+  cursor: "pointer",
+  background: "#f5f5f5",
+  color: "#000",
+  marginBottom: "6px",
+  textAlign: "left",
+  transition: "background 0.2s",
+  fontSize: "14px",
 };
