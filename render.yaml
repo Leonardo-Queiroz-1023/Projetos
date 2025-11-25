@@ -19,4 +19,4 @@ services:
 
     envVars:
       - key: JAVA_VERSION
-        value: 21
+        value: 17
