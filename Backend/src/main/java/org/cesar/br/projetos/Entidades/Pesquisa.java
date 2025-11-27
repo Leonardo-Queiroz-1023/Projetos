@@ -19,7 +19,7 @@ public class Pesquisa implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-
+    private String nome;
     private LocalDate dataInicio;
     private LocalDate dataFinal;
 
@@ -38,7 +38,8 @@ public class Pesquisa implements Serializable {
 
     public Pesquisa() {}
 
-    public Pesquisa(Modelo modelo, LocalDate dataInicio, LocalDate dataFinal) {
+    public Pesquisa(String nome, Modelo modelo, LocalDate dataInicio, LocalDate dataFinal) {
+        thhis.nome = nome
         this.modelo = modelo;
         this.dataInicio = dataInicio;
         this.dataFinal = dataFinal;

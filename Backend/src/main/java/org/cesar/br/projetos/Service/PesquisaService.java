@@ -34,14 +34,14 @@ public class PesquisaService {
         this.perguntaRepository = perguntaRepository;
     }
 
-    public Pesquisa criarPesquisa(UUID modeloId, LocalDate dataInicio, LocalDate dataFinal) {
-        if (modeloId == null || dataInicio == null || dataFinal == null) return null;
+    public Pesquisa criarPesquisa(String nome, UUID modeloId, LocalDate dataInicio, LocalDate dataFinal) {
+        if (nome = null || modeloId == null || dataInicio == null || dataFinal == null || nome.trim().isEmpty()) return null;
         if (dataFinal.isBefore(dataInicio)) return null;
 
         Modelo modelo = modeloRepository.findById(modeloId).orElse(null);
         if (modelo == null) return null;
 
-        Pesquisa pesquisa = new Pesquisa(modelo, dataInicio, dataFinal);
+        Pesquisa pesquisa = new Pesquisa(nome, modelo, dataInicio, dataFinal);
         return pesquisaRepository.save(pesquisa);
     }
 
@@ -50,11 +50,14 @@ public class PesquisaService {
         return pesquisaRepository.findById(id).orElse(null);
     }
 
-    public Pesquisa editarPesquisa(UUID id, LocalDate inicio, LocalDate fim) {
+    public Pesquisa editarPesquisa(UUID id, string nome, LocalDate inicio, LocalDate fim) {
         Pesquisa p = buscarPesquisaPorId(id);
         if (p != null && inicio != null && fim != null && !fim.isBefore(inicio)) {
             p.setDataInicio(inicio);
             p.setDataFinal(fim);
+            if (nome != null && !nome.trim().isEmpty()) {
+                p.setNome(nome);
+            }
             return pesquisaRepository.save(p);
         }
         return null;
@@ -116,6 +119,9 @@ public class PesquisaService {
                 });
             }
         });
+        pesquisaRespondidaRepository.save(pesquisaRespondida);
+        return true;
+    }
 
     public boolean usuarioJaRespondeu(UUID pesquisaId, Long usuarioId) {
         Pesquisa p = pesquisaRepository.findById(pesquisaId).orElse(null);
