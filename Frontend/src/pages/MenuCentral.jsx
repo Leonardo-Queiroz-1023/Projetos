@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 
@@ -7,14 +7,6 @@ export default function MenuCentral() {
   const username = localStorage.getItem("username") || "Usuário";
   const [showPesquisasMenu, setShowPesquisasMenu] = useState(false);
 
-  // se estiver testando sem login, deixa comentado
-  // useEffect(() => {
-  //   const logged = localStorage.getItem("logged") === "true";
-  //   if (!logged) {
-  //     navigate("/login?msg=Logue%20antes%20de%20ir%20para%20o%20menu", { replace: true });
-  //   }
-  // }, [navigate]);
-
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
@@ -22,110 +14,141 @@ export default function MenuCentral() {
     navigate("/login", { replace: true });
   }
 
-return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 50px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <PerimeterBox style={{ textAlign: "center", width: "320px" }}>
-        <h1 style={{ marginBottom: 20 }}>Menu Central</h1>
-        <p style={{ marginBottom: 30 }}>Bem-vinda(o), {username}.</p>
+  return (
+    <div style={outer}>
+      <PerimeterBox style={{ padding: 0, background: "transparent", boxShadow: "none" }}>
+        <div style={blackCard}>
+          <header style={header}>
+            <h2 style={{ margin: 0 }}>SMART SURVEYS</h2>
+            <div style={{ color: "#ddd", fontSize: 13 }}>Bem-vinda(o), {username}</div>
+          </header>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-          <button onClick={() => navigate("/modelos")} style={btn}>
-            Modelos
-          </button>
+          <main style={grid}>
+            <div style={summaryCard} onClick={() => navigate("/resumo")}>
+              <div style={summaryText}>RESUMO GERAL</div>
+            </div>
 
-          {/* Botão Pesquisas com Dropdown */}
-          <div style={{ position: "relative" }}>
-            <button
-              onClick={() => setShowPesquisasMenu(!showPesquisasMenu)}
-              style={{ ...btn, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-            >
-              Pesquisas
-              <span style={{ fontSize: "12px" }}>
-                {showPesquisasMenu ? "▲" : "▼"}
-              </span>
-            </button>
+            <div style={rightColumn}>
+              <button style={smallCard} onClick={() => navigate("/criar-modelos")}>
+                Criar modelo CSAT
+              </button>
+              <button style={smallCard} onClick={() => navigate("/modelos")}>
+                Ver modelos CSAT
+              </button>
+              <button style={smallCard} onClick={() => navigate("/resultados")}>
+                Ver resultados
+              </button>
+            </div>
 
-            {/* Dropdown Menu */}
-            {showPesquisasMenu && (
-              <div style={dropdownMenu}>
-                <button
-                  onClick={() => navigate("/lancar-pesquisas")}
-                  style={dropdownItem}
-                >
-                  📤 Lançar pesquisas
-                </button>
-                <button
-                  onClick={() => navigate("/pesquisas-em-andamento")}
-                  style={dropdownItem}
-                >
-                  🔄 Visualizar pesquisas em andamento
-                </button>
-                <button
-                  onClick={() => navigate("/pesquisas-finalizadas")}//ainda não existe
-                  style={dropdownItem}
-                >
-                  ✅ Visualizar pesquisas finalizadas
-                </button>
-              </div>
-            )}
-          </div>
+            <div style={ongoingCard} onClick={() => navigate("/pesquisas-em-andamento")}>
+              <div style={{ fontSize: 16 }}>Pesquisas em andamento</div>
+            </div>
 
-          <button
-            onClick={logout}
-            style={{ ...btn, marginTop: 10, background: "#333" }}
-          >
-            Sair
-          </button>
+            <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: 12 }}>
+              <button style={logoutBtn} onClick={logout}>Sair</button>
+            </div>
+          </main>
         </div>
       </PerimeterBox>
     </div>
   );
 }
 
-const btn = {
-  width: "160px",
-  padding: "10px 16px",
-  borderRadius: "8px",
-  border: "none",
-  cursor: "pointer",
-  background: "#000",
+const outer = {
+  minHeight: "calc(100vh - 50px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontFamily: "sans-serif",
+  padding: 20,
+};
+
+const blackCard = {
+  width: 720,
+  maxWidth: "94vw",
+  background: "#0b0b0b",
+  borderRadius: 24,
+  padding: 20,
   color: "#fff",
-  margin: "0 auto",
+  boxSizing: "border-box",
+  border: "6px solid #000",
 };
 
-const dropdownMenu = {
-  position: "absolute",
-  top: "100%",
-  left: "50%",
-  transform: "translateX(-50%)",
-  marginTop: "8px",
-  background: "#fff",
-  border: "2px solid #000",
-  borderRadius: "8px",
-  padding: "8px",
-  minWidth: "240px",
-  zIndex: 1000,
-  boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+const header = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 14,
+  padding: "0 8px",
 };
 
-const dropdownItem = {
-  width: "100%",
-  padding: "10px 16px",
-  borderRadius: "6px",
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "1fr 260px",
+  gridTemplateRows: "1fr auto",
+  gridTemplateAreas: `"summary tiles" "ongoing ongoing"`,
+  gap: 16,
+  alignItems: "stretch",
+};
+
+const summaryCard = {
+  gridArea: "summary",
+  background: "#e9e9e9",
+  color: "#111",
+  borderRadius: 12,
+  padding: 18,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  minHeight: 160,
+};
+
+const summaryText = {
+  fontSize: 18,
+  fontWeight: 600,
+  textAlign: "center",
+};
+
+const rightColumn = {
+  gridArea: "tiles",
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  alignItems: "stretch",
+};
+
+const smallCard = {
+  background: "#e9e9e9",
+  color: "#111",
+  borderRadius: 12,
+  padding: "14px 12px",
   border: "none",
   cursor: "pointer",
-  background: "#f5f5f5",
-  color: "#000",
-  marginBottom: "6px",
-  textAlign: "left",
-  transition: "background 0.2s",
-  fontSize: "14px",
+  textAlign: "center",
+  fontSize: 14,
+};
+
+const ongoingCard = {
+  gridArea: "ongoing",
+  background: "#e9e9e9",
+  color: "#111",
+  borderRadius: 12,
+  padding: 18,
+  minHeight: 120,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  marginTop: 4,
+};
+
+const logoutBtn = {
+  background: "#86c6ff",
+  color: "#023047",
+  border: "none",
+  padding: "8px 28px",
+  borderRadius: 10,
+  cursor: "pointer",
+  fontWeight: 600,
 };
