@@ -35,7 +35,7 @@ public class PesquisaService {
     }
 
     public Pesquisa criarPesquisa(String nome, UUID modeloId, LocalDate dataInicio, LocalDate dataFinal) {
-        if (nome = null || modeloId == null || dataInicio == null || dataFinal == null || nome.trim().isEmpty()) return null;
+        if (nome == null || modeloId == null || dataInicio == null || dataFinal == null || nome.trim().isEmpty()) return null;
         if (dataFinal.isBefore(dataInicio)) return null;
 
         Modelo modelo = modeloRepository.findById(modeloId).orElse(null);
@@ -50,7 +50,7 @@ public class PesquisaService {
         return pesquisaRepository.findById(id).orElse(null);
     }
 
-    public Pesquisa editarPesquisa(UUID id, string nome, LocalDate inicio, LocalDate fim) {
+    public Pesquisa editarPesquisa(UUID id, String nome, LocalDate inicio, LocalDate fim) {
         Pesquisa p = buscarPesquisaPorId(id);
         if (p != null && inicio != null && fim != null && !fim.isBefore(inicio)) {
             p.setDataInicio(inicio);

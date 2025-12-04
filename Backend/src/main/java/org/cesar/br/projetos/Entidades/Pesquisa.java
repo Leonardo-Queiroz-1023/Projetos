@@ -39,7 +39,7 @@ public class Pesquisa implements Serializable {
     public Pesquisa() {}
 
     public Pesquisa(String nome, Modelo modelo, LocalDate dataInicio, LocalDate dataFinal) {
-        thhis.nome = nome
+        this.nome = nome;
         this.modelo = modelo;
         this.dataInicio = dataInicio;
         this.dataFinal = dataFinal;
