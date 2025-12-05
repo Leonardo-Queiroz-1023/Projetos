@@ -1,21 +1,24 @@
-// src/App.jsx
 import React from "react";
 import { Routes, Route, Link } from "react-router-dom";
+
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import MenuCentral from "./pages/MenuCentral.jsx";
 import ListarModelos from "./pages/ListarModelos.jsx";
 import CriarModelos from "./pages/CriarModelos.jsx";
 import EditarModelo from "./pages/EditarModelo.jsx";
+
 import Pesquisas from "./pages/Pesquisas.jsx";
 import LancarPesquisas from "./pages/LancarPesquisas.jsx";
 import DispararPesquisa from "./pages/DispararPesquisa.jsx";
 import ResponderPesquisa from "./pages/ResponderPesquisa.jsx";
+import PesquisasAndamento from "./pages/pesquisas_andamento.jsx";
 
 const navStyle = {
   padding: "10px 32px 14px",
   display: "flex",
   flexDirection: "column",
+  gap: "12px",
   alignItems: "center",
   justifyContent: "center",
   backgroundColor: "black",
@@ -31,7 +34,7 @@ const brandStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  marginBottom: 8,
+  marginBottom: 4,
 };
 
 const navLinksStyle = {
@@ -52,6 +55,7 @@ export default function App() {
   return (
     <>
       <nav style={navStyle}>
+        {/* LOGO / TEXTO CENTRALIZADO */}
         <div style={brandStyle}>
           <span
             style={{
@@ -65,6 +69,7 @@ export default function App() {
           </span>
         </div>
 
+        {/* LINKS DA NAV, TODOS JUNTOS */}
         <div style={navLinksStyle}>
           <Link to="/login" style={navLinkStyle}>
             Login
@@ -84,22 +89,36 @@ export default function App() {
           <Link to="/pesquisas" style={navLinkStyle}>
             Pesquisas
           </Link>
+          <Link to="/lancar-pesquisas" style={navLinkStyle}>
+            Lançar Pesquisas
+          </Link>
+          <Link to="/pesquisas-em-andamento" style={navLinkStyle}>
+            Pesquisas em Andamento
+          </Link>
         </div>
       </nav>
 
       <Routes>
-        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/menu-central" element={<MenuCentral />} />
+
         <Route path="/modelos" element={<ListarModelos />} />
         <Route path="/modelos/criar" element={<CriarModelos />} />
         <Route path="/modelos/editar/:id" element={<EditarModelo />} />
+
         <Route path="/pesquisas" element={<Pesquisas />} />
         <Route path="/lancar-pesquisas" element={<LancarPesquisas />} />
-        <Route path="/disparar-pesquisa/:modeloId" element={<DispararPesquisa />} />
+        <Route
+          path="/disparar-pesquisa/:modeloId"
+          element={<DispararPesquisa />}
+        />
         <Route path="/responder/:token" element={<ResponderPesquisa />} />
-        <Route path="/pesquisas-em-andamento" element={<PesquisasAndamento />} />
+        <Route
+          path="/pesquisas-em-andamento"
+          element={<PesquisasAndamento />}
+        />
+
         <Route path="*" element={<div>404</div>} />
       </Routes>
     </>
