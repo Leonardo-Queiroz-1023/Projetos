@@ -23,27 +23,17 @@ public class Modelo implements Serializable {
     @Getter @Setter
     private String descricao;
 
-    @Getter @Setter
-    @Enumerated(EnumType.STRING)
-    private PlataformasDeEnvios plataformasDisponiveis;
 
     @OneToMany(mappedBy = "modelo", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     @Getter @Setter
     private List<Pergunta> perguntas = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    @JsonBackReference
-    @Getter @Setter
-    private Usuario usuario;
 
     public Modelo() {}
-    public Modelo(UUID id, String nome, String descricao, PlataformasDeEnvios plataformasDisponiveis, Usuario usuario) {
+    public Modelo(UUID id, String nome, String descricao) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
-        this.plataformasDisponiveis = plataformasDisponiveis;
-        this.usuario = usuario;
     }
 }

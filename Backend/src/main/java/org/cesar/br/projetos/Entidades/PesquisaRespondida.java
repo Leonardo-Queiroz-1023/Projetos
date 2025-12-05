@@ -24,7 +24,9 @@ public class PesquisaRespondida implements Serializable {
     private UUID id;
 
     @Getter @Setter
-    private LocalDateTime dataResposta;
+    private LocalDateTime horarioAcesso;
+    private LocalDateTime horarioResposta;
+
 
     @ManyToOne
     @JoinColumn(name = "pesquisa_id", nullable = false)
@@ -32,10 +34,8 @@ public class PesquisaRespondida implements Serializable {
     @Getter @Setter
     private Pesquisa pesquisa;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    @Getter @Setter
-    private Usuario usuario;
+    boolean Respondida;
+    boolean acessado;
 
     @OneToMany(mappedBy = "pesquisaRespondida", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("respondida-respostas")
@@ -44,9 +44,9 @@ public class PesquisaRespondida implements Serializable {
 
     public PesquisaRespondida() {}
 
-    public PesquisaRespondida(Pesquisa pesquisa, Usuario usuario) {
+    public PesquisaRespondida(Pesquisa pesquisa, Respondente respondente) {
         this.pesquisa = pesquisa;
-        this.usuario = usuario;
-        this.dataResposta = LocalDateTime.now(); // Marca a data/hora atual automaticamente
+        this.respondente = respondente;
+        this.horarioResposta = LocalDateTime.now(); // Marca a data/hora atual automaticamente
     }
 }

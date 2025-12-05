@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.util.UUID;
 
+
 @Entity
 public class Pergunta implements Serializable {
 

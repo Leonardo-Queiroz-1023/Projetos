@@ -20,18 +20,16 @@ public class Usuario implements Serializable{
     @Getter @Setter private String nome;
 	@Getter @Setter private String email;
 	@Getter @Setter private String senha;
-	@Getter private LocalDate dataCadastro;
 
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	@Getter @Setter
-	private List<Modelo> modelos = new ArrayList<>();
-	
-	public Usuario(){}	public Usuario(String nome, String email, String senha, LocalDate dataCadastro){
+	// @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+	// @JsonManagedReference
+	// @Getter @Setter
+	// private List<Modelo> modelos = new ArrayList<>();
+
+	public Usuario(){}	public Usuario(String nome, String email, String senha){
 		this.nome = nome;
 		this.email = email;
 		this.senha = senha;
-		this.dataCadastro = dataCadastro;
 	}
 
 }
