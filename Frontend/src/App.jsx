@@ -8,6 +8,9 @@ import ListarModelos from "./pages/ListarModelos.jsx";
 import CriarModelos from "./pages/CriarModelos.jsx";
 import EditarModelo from "./pages/EditarModelo.jsx";
 import Pesquisas from "./pages/Pesquisas.jsx";
+import LancarPesquisas from "./pages/LancarPesquisas.jsx";
+import DispararPesquisa from "./pages/DispararPesquisa.jsx";
+import ResponderPesquisa from "./pages/ResponderPesquisa.jsx";
 
 const navStyle = {
   padding: "12px 24px",
@@ -58,6 +61,10 @@ export default function App() {
         <Route path="/modelos/criar" element={<CriarModelos />} />
         <Route path="/modelos/editar/:id" element={<EditarModelo />} />
         <Route path="/pesquisas" element={<Pesquisas />} />
+        <Route path="/lancar-pesquisas" element={<LancarPesquisas />} />
+        <Route path="/disparar-pesquisa/:modeloId" element={<DispararPesquisa />} />
+        <Route path="/responder/:token" element={<ResponderPesquisa />} />
+        <Route path="/pesquisas-em-andamento" element={<PesquisasAndamento />} />
         <Route path="*" element={<div>404</div>} />
       </Routes>
     </>
