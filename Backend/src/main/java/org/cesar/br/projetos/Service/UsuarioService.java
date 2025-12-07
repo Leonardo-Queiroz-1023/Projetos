@@ -1,12 +1,12 @@
 package org.cesar.br.projetos.Service;
 
-import org.cesar.br.projetos.Repository.UsuarioRepository;
 import org.cesar.br.projetos.Entidades.Usuario;
+import org.cesar.br.projetos.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Transactional
@@ -20,9 +20,20 @@ public class UsuarioService {
     }
 
     // ---------------------------------------------------------------------
-    // CREATE - Lógica de negócio: registrar usuário
+    // CREATE - registrar usuário
     // ---------------------------------------------------------------------
-    public boolean registrarUsuario(String nome, String email, String senha, LocalDate dataCadastro) {
+    /**
+     * Registra um novo usuário.
+     *
+     * @param nome        nome da pessoa usuária
+     * @param email       email (único no sistema)
+     * @param senhaEmTexto senha em texto plano (por enquanto; ideal é hashear)
+     * @param isAdmin     se é admin ou não
+     */
+    public boolean registrarUsuario(String nome,
+                                    String email,
+                                    String senhaEmTexto,
+                                    boolean isAdmin) {
 
         // Validação: campos obrigatórios
         if (nome == null || nome.trim().isEmpty()) {
@@ -31,133 +42,142 @@ public class UsuarioService {
         if (email == null || email.trim().isEmpty()) {
             return false;
         }
-        if (senha == null || senha.trim().isEmpty()) {
+        if (senhaEmTexto == null || senhaEmTexto.trim().isEmpty()) {
             return false;
         }
 
-        // Regra de negócio: verifica se o usuário já existe
-        if (usuarioRepository.findByNome(nome).isPresent()) {
-            return false; // usuário já cadastrado
+        // Regra de negócio: email deve ser único
+        if (usuarioRepository.findByEmail(email).isPresent()) {
+            return false; // já existe usuário com esse email
         }
 
-        // Criação do usuário
-        Usuario usuario = new Usuario(nome, email, senha, dataCadastro);
+        // Aqui seria o ponto ideal para aplicar um hash de senha:
+        // String hash = passwordEncoder.encode(senhaEmTexto);
+        // Por enquanto, só jogamos a senha em texto dentro de senhaHash
+        String senhaHash = senhaEmTexto;
 
-        // Persistência
+        // Criação do usuário com o construtor novo
+        Usuario usuario = new Usuario(nome, email, senhaHash, isAdmin);
+
         usuarioRepository.save(usuario);
         return true;
     }
 
     // ---------------------------------------------------------------------
-    // READ - Lógica de negócio: buscar usuário por nome
+    // READ - buscar usuário por email (forma principal de login)
     // ---------------------------------------------------------------------
-    public Usuario buscarUsuario(String nome) {
+    public Usuario buscarPorEmail(String email) {
 
-        // Validação: nome obrigatório
-        if (nome == null || nome.trim().isEmpty()) {
+        if (email == null || email.trim().isEmpty()) {
             return null;
         }
 
-        // Busca no repositório
-        return usuarioRepository.findByNome(nome).orElse(null);
+        return usuarioRepository.findByEmail(email).orElse(null);
+    }
+
+    // (Método de compatibilidade com o nome antigo, se você ainda usar em controller)
+    public Usuario buscarUsuario(String email) {
+        return buscarPorEmail(email);
     }
 
     // ---------------------------------------------------------------------
-    // READ - Lógica de negócio: buscar usuário por ID
+    // READ - buscar usuário por ID
     // ---------------------------------------------------------------------
     public Usuario buscarPorId(Long id) {
 
-        // Validação: ID obrigatório
         if (id == null) {
             return null;
         }
 
-        // Busca no repositório
         return usuarioRepository.findById(id).orElse(null);
     }
 
     // ---------------------------------------------------------------------
-    // AUTENTICAÇÃO - Lógica de negócio: validar credenciais
+    // AUTENTICAÇÃO - validar credenciais
     // ---------------------------------------------------------------------
-    public boolean autenticarUsuario(String nome, String senha) {
+    /**
+     * Autentica usando email + senha em texto.
+     * Ideal: substituir depois por hash com PasswordEncoder.
+     */
+    public boolean autenticarUsuario(String email, String senhaEmTexto) {
 
-        // Validação: campos obrigatórios
-        if (nome == null || nome.trim().isEmpty()) {
+        if (email == null || email.trim().isEmpty()) {
             return false;
         }
-        if (senha == null || senha.trim().isEmpty()) {
+        if (senhaEmTexto == null || senhaEmTexto.trim().isEmpty()) {
             return false;
         }
 
-        // Busca o usuário
-        Usuario usuario = usuarioRepository.findByNome(nome).orElse(null);
-
-        // Verifica se o usuário foi encontrado
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
         if (usuario == null) {
             return false;
         }
 
-        // return encoder.matches(senha, usuario.getSenha());
-
-        // Validação temporária (senha em texto plano)
-        return usuario.getSenha().equals(senha);
+        // TODO: substituir por passwordEncoder.matches(senhaEmTexto, usuario.getSenhaHash())
+        return senhaEmTexto.equals(usuario.getSenhaHash());
     }
 
     // ---------------------------------------------------------------------
-    // READ - Lógica de negócio: listar todos os usuários (opcional)
+    // READ - listar todos os usuários
     // ---------------------------------------------------------------------
-    public java.util.List<Usuario> listarTodosUsuarios() {
+    public List<Usuario> listarTodosUsuarios() {
         return usuarioRepository.findAll();
     }
 
     // ---------------------------------------------------------------------
-    // UPDATE - Lógica de negócio: atualizar dados do usuário
+    // UPDATE - atualizar dados do usuário
     // ---------------------------------------------------------------------
-    public boolean atualizarUsuario(Long id, String nome, String email, String senha) {
+    public boolean atualizarUsuario(Long id,
+                                    String nome,
+                                    String email,
+                                    String novaSenhaEmTexto,
+                                    Boolean isAdmin) {
 
-        // Validação: ID obrigatório
         if (id == null) {
             return false;
         }
 
-        // Busca o usuário existente
         Usuario existente = usuarioRepository.findById(id).orElse(null);
         if (existente == null) {
             return false;
         }
 
-        // Atualiza apenas campos não nulos
         if (nome != null && !nome.trim().isEmpty()) {
             existente.setNome(nome);
         }
+
         if (email != null && !email.trim().isEmpty()) {
+            // se o email for alterado, convém checar se já não existe outro usuário com esse email
+            // aqui estou sendo simplista; em produção seria legal tratar colisão
             existente.setEmail(email);
         }
-        if (senha != null && !senha.trim().isEmpty()) {
-            existente.setSenha(senha);
+
+        if (novaSenhaEmTexto != null && !novaSenhaEmTexto.trim().isEmpty()) {
+            // ideal: aplicar hash
+            existente.setSenhaHash(novaSenhaEmTexto);
         }
 
-        // Persistência
+        if (isAdmin != null) {
+            existente.setIsAdmin(isAdmin);
+        }
+
         usuarioRepository.save(existente);
         return true;
     }
 
     // ---------------------------------------------------------------------
-    // DELETE - Lógica de negócio: deletar usuário
+    // DELETE - deletar usuário
     // ---------------------------------------------------------------------
     public boolean deletarUsuario(Long id) {
 
-        // Validação: ID obrigatório
         if (id == null) {
             return false;
         }
 
-        // Verifica se o usuário existe
         if (!usuarioRepository.existsById(id)) {
             return false;
         }
 
-        // Deleção
         usuarioRepository.deleteById(id);
         return true;
     }

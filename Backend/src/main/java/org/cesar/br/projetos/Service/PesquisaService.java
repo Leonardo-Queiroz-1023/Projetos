@@ -1,15 +1,15 @@
 package org.cesar.br.projetos.Service;
 
-import org.cesar.br.projetos.Repository.*;
 import org.cesar.br.projetos.Entidades.*;
+import org.cesar.br.projetos.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -18,137 +18,221 @@ public class PesquisaService {
     private final PesquisaRepository pesquisaRepository;
     private final PesquisaRespondidaRepository pesquisaRespondidaRepository;
     private final ModeloRepository modeloRepository;
-    private final UsuarioRepository usuarioRepository;
     private final PerguntaRepository perguntaRepository;
+    private final RespondenteService respondenteService;
 
     @Autowired
     public PesquisaService(PesquisaRepository pesquisaRepository,
                            PesquisaRespondidaRepository pesquisaRespondidaRepository,
                            ModeloRepository modeloRepository,
-                           UsuarioRepository usuarioRepository,
-                           PerguntaRepository perguntaRepository) {
+                           PerguntaRepository perguntaRepository,
+                           RespondenteService respondenteService) {
         this.pesquisaRepository = pesquisaRepository;
         this.pesquisaRespondidaRepository = pesquisaRespondidaRepository;
         this.modeloRepository = modeloRepository;
-        this.usuarioRepository = usuarioRepository;
         this.perguntaRepository = perguntaRepository;
+        this.respondenteService = respondenteService;
     }
 
-    public Pesquisa criarPesquisa(String nome, UUID modeloId, LocalDate dataInicio, LocalDate dataFinal) {
-        if (nome == null || modeloId == null || dataInicio == null || dataFinal == null || nome.trim().isEmpty()) return null;
+    // -----------------------------------------------------------------
+    // CREATE - criar pesquisa
+    // (por enquanto sem owner; depois podemos adicionar Usuario owner)
+    // -----------------------------------------------------------------
+    public Pesquisa criarPesquisa(String nome,
+                                  Long modeloId,
+                                  LocalDate dataInicio,
+                                  LocalDate dataFinal) {
+
+        if (nome == null || nome.trim().isEmpty()) return null;
+        if (modeloId == null || dataInicio == null || dataFinal == null) return null;
         if (dataFinal.isBefore(dataInicio)) return null;
 
         Modelo modelo = modeloRepository.findById(modeloId).orElse(null);
         if (modelo == null) return null;
 
-        Pesquisa pesquisa = new Pesquisa(nome, modelo, dataInicio, dataFinal);
+        // owner pode ser null por enquanto
+        Pesquisa pesquisa = new Pesquisa(nome, modelo, dataInicio, dataFinal, null);
         return pesquisaRepository.save(pesquisa);
     }
 
-    public Pesquisa buscarPesquisaPorId(UUID id) {
+    // -----------------------------------------------------------------
+    // READ - buscar pesquisa por ID
+    // -----------------------------------------------------------------
+    public Pesquisa buscarPesquisaPorId(Long id) {
         if (id == null) return null;
         return pesquisaRepository.findById(id).orElse(null);
     }
 
-    public Pesquisa editarPesquisa(UUID id, String nome, LocalDate inicio, LocalDate fim) {
+    // -----------------------------------------------------------------
+    // UPDATE - editar pesquisa
+    // -----------------------------------------------------------------
+    public Pesquisa editarPesquisa(Long id,
+                                   String nome,
+                                   LocalDate inicio,
+                                   LocalDate fim) {
+
         Pesquisa p = buscarPesquisaPorId(id);
-        if (p != null && inicio != null && fim != null && !fim.isBefore(inicio)) {
-            p.setDataInicio(inicio);
-            p.setDataFinal(fim);
-            if (nome != null && !nome.trim().isEmpty()) {
-                p.setNome(nome);
-            }
-            return pesquisaRepository.save(p);
+        if (p == null) return null;
+
+        if (inicio == null || fim == null || fim.isBefore(inicio)) {
+            return null;
         }
-        return null;
+
+        p.setDataInicio(inicio);
+        p.setDataFinal(fim);
+
+        if (nome != null && !nome.trim().isEmpty()) {
+            p.setNome(nome);
+        }
+
+        return pesquisaRepository.save(p);
     }
 
-    public boolean deletarPesquisa(UUID id) {
-        if (id != null && pesquisaRepository.existsById(id)) {
-            pesquisaRepository.deleteById(id);
-            return true;
+    // -----------------------------------------------------------------
+    // DELETE - deletar pesquisa
+    // -----------------------------------------------------------------
+    public boolean deletarPesquisa(Long id) {
+        if (id == null) return false;
+
+        if (!pesquisaRepository.existsById(id)) {
+            return false;
         }
-        return false;
+
+        pesquisaRepository.deleteById(id);
+        return true;
     }
 
-    public List<Pesquisa> listarPesquisasPorModelo(UUID modeloId) {
+    // -----------------------------------------------------------------
+    // READ - listar pesquisas de um modelo
+    // -----------------------------------------------------------------
+    public List<Pesquisa> listarPesquisasPorModelo(Long modeloId) {
+        if (modeloId == null) return List.of();
+
         Modelo modelo = modeloRepository.findById(modeloId).orElse(null);
         if (modelo == null) return List.of();
+
         return pesquisaRepository.findByModelo(modelo);
     }
 
+    // -----------------------------------------------------------------
+    // READ - listar pesquisas ativas hoje
+    // -----------------------------------------------------------------
     public List<Pesquisa> listarPesquisasAtivasHoje() {
         LocalDate hoje = LocalDate.now();
+        // aqui presumimos que o repositório tem um método que filtra por data
+        // ex.: findByDataBetween(hoje, hoje) OU uma query custom como findAtivasNaData(hoje)
         return pesquisaRepository.findByDataBetween(hoje, hoje);
     }
 
     public List<Pesquisa> listarPesquisasPorDataInicio(LocalDate data) {
+        if (data == null) return List.of();
         return pesquisaRepository.findByDataInicio(data);
     }
 
     public List<Pesquisa> listarPesquisasPorDataFinal(LocalDate data) {
+        if (data == null) return List.of();
         return pesquisaRepository.findByDataFinal(data);
     }
 
-    public boolean responderPesquisa(UUID pesquisaId, Long usuarioId, Map<UUID, String> respostasUsuario) {
-        if (pesquisaId == null || usuarioId == null || respostasUsuario == null || respostasUsuario.isEmpty()) return false;
+    // -----------------------------------------------------------------
+    // RESPONDER PESQUISA - agora usando RespondenteService
+    // -----------------------------------------------------------------
+    public boolean responderPesquisa(Long pesquisaId,
+                                     Long respondenteId,
+                                     Map<Long, String> respostasUsuario) {
+
+        if (pesquisaId == null || respondenteId == null) return false;
+        if (respostasUsuario == null || respostasUsuario.isEmpty()) return false;
 
         Pesquisa pesquisa = pesquisaRepository.findById(pesquisaId).orElse(null);
-        Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        Respondente respondente = respondenteService.buscarPorId(respondenteId);
 
-        if (pesquisa == null || usuario == null) return false;
+        if (pesquisa == null || respondente == null) return false;
 
-        if (pesquisaRespondidaRepository.findByPesquisaAndUsuario(pesquisa, usuario) != null) {
+        // Verifica se já existe uma submissão dessa pesquisa para esse respondente
+        if (pesquisaRespondidaRepository.findByPesquisaAndRespondente(pesquisa, respondente) != null) {
             return false;
         }
 
+        // Verifica se está no período de resposta
         LocalDate hoje = LocalDate.now();
         if (hoje.isBefore(pesquisa.getDataInicio()) || hoje.isAfter(pesquisa.getDataFinal())) {
             return false;
         }
 
-        PesquisaRespondida pesquisaRespondida = new PesquisaRespondida(pesquisa, usuario);
+        // Cria a submissão
+        PesquisaRespondida pesquisaRespondida = new PesquisaRespondida(pesquisa, respondente);
 
+        // Monta as respostas (cada entrada do Map é: idPergunta -> texto)
         respostasUsuario.forEach((perguntaId, texto) -> {
-            if (texto != null) {
+            if (perguntaId != null && texto != null && !texto.trim().isEmpty()) {
+
                 perguntaRepository.findById(perguntaId).ifPresent(pergunta -> {
-
                     Resposta resposta = new Resposta(texto, pergunta, pesquisaRespondida);
-
                     pesquisaRespondida.getRespostas().add(resposta);
                 });
             }
         });
+
+        // Se não tiver nenhuma resposta válida, você pode decidir falhar:
+        if (pesquisaRespondida.getRespostas().isEmpty()) {
+            return false;
+        }
+
+        // Marca como respondida e define horárioResposta
+        pesquisaRespondida.setRespondida(true);
+        pesquisaRespondida.setHorarioResposta(LocalDateTime.now());
+
         pesquisaRespondidaRepository.save(pesquisaRespondida);
         return true;
     }
 
-    public boolean usuarioJaRespondeu(UUID pesquisaId, Long usuarioId) {
+    // -----------------------------------------------------------------
+    // Verificar se um respondente já respondeu uma pesquisa
+    // -----------------------------------------------------------------
+    public boolean respondenteJaRespondeu(Long pesquisaId, Long respondenteId) {
+        if (pesquisaId == null || respondenteId == null) return false;
+
         Pesquisa p = pesquisaRepository.findById(pesquisaId).orElse(null);
-        Usuario u = usuarioRepository.findById(usuarioId).orElse(null);
+        Respondente r = respondenteService.buscarPorId(respondenteId);
 
-        if (p == null || u == null) return false;
+        if (p == null || r == null) return false;
 
-        return pesquisaRespondidaRepository.findByPesquisaAndUsuario(p, u) != null;
+        return pesquisaRespondidaRepository.findByPesquisaAndRespondente(p, r) != null;
     }
 
-    public List<PesquisaRespondida> listarHistoricoUsuario(Long usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
-        if (usuario == null) return List.of();
+    // -----------------------------------------------------------------
+    // Histórico de respostas de um Respondente
+    // -----------------------------------------------------------------
+    public List<PesquisaRespondida> listarHistoricoRespondente(Long respondenteId) {
+        if (respondenteId == null) return List.of();
 
-        return pesquisaRespondidaRepository.findByUsuario(usuario);
+        Respondente respondente = respondenteService.buscarPorId(respondenteId);
+        if (respondente == null) return List.of();
+
+        return pesquisaRespondidaRepository.findByRespondente(respondente);
     }
 
-    public List<PesquisaRespondida> listarTodasRespostasDaPesquisa(UUID pesquisaId) {
+    // -----------------------------------------------------------------
+    // Listar todas submissões (PesquisaRespondida) de uma pesquisa
+    // -----------------------------------------------------------------
+    public List<PesquisaRespondida> listarTodasRespostasDaPesquisa(Long pesquisaId) {
+        if (pesquisaId == null) return List.of();
+
         Pesquisa pesquisa = pesquisaRepository.findById(pesquisaId).orElse(null);
         if (pesquisa == null) return List.of();
 
         return pesquisaRespondidaRepository.findByPesquisa(pesquisa);
     }
 
-    public long contarTotalRespostas(UUID pesquisaId) {
+    // -----------------------------------------------------------------
+    // Contar total de submissões de uma pesquisa
+    // -----------------------------------------------------------------
+    public long contarTotalRespostas(Long pesquisaId) {
+        if (pesquisaId == null) return 0L;
+
         Pesquisa pesquisa = pesquisaRepository.findById(pesquisaId).orElse(null);
-        if (pesquisa == null) return 0;
+        if (pesquisa == null) return 0L;
 
         return pesquisaRespondidaRepository.countByPesquisa(pesquisa);
     }
