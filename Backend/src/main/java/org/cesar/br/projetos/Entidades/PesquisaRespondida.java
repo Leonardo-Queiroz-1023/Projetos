@@ -4,49 +4,68 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"pesquisa_id", "usuario_id"})
-})
+@Table(
+        uniqueConstraints = {
+                // Garante no banco que um mesmo Respondente só tenha
+                // UMA submissão por Pesquisa
+                @UniqueConstraint(columnNames = {"pesquisa_id", "respondente_id"})
+        }
+)
+@Getter
+@Setter
+@NoArgsConstructor
 public class PesquisaRespondida implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Getter
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Getter @Setter
-    private LocalDateTime horarioAcesso;
-    private LocalDateTime horarioResposta;
-
-
-    @ManyToOne
+    // Vínculo com a Pesquisa (muitas respostas para uma pesquisa)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pesquisa_id", nullable = false)
-    @JsonBackReference("pesquisa-respondidas") // Evita loop infinito ao serializar Pesquisa
-    @Getter @Setter
+    @JsonBackReference("pesquisa-respondidas") // par com @JsonManagedReference em Pesquisa.respostas
     private Pesquisa pesquisa;
 
-    boolean Respondida;
-    boolean acessado;
+    // Vínculo com o Respondente (muitas submissões de um mesmo respondente)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "respondente_id", nullable = false)
+    @JsonBackReference("respondente-respondidas") // par com @JsonManagedReference em Respondente.pesquisasRespondidas
+    private Respondente respondente;
 
+    // Quando a pessoa acessou o link (primeiro acesso)
+    private LocalDateTime horarioAcesso;
+
+    // Quando finalizou a resposta
+    private LocalDateTime horarioResposta;
+
+    // ex.: saiu sem terminar, abandonou
+    private boolean cessado;
+
+    // ex.: completou e enviou
+    private boolean respondida;
+
+    // Uma submissão (PesquisaRespondida) tem várias Respostas (uma por Pergunta)
     @OneToMany(mappedBy = "pesquisaRespondida", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("respondida-respostas")
-    @Getter @Setter
     private List<Resposta> respostas = new ArrayList<>();
 
-    public PesquisaRespondida() {}
-
+    // Construtor de conveniência
     public PesquisaRespondida(Pesquisa pesquisa, Respondente respondente) {
         this.pesquisa = pesquisa;
         this.respondente = respondente;
-        this.horarioResposta = LocalDateTime.now(); // Marca a data/hora atual automaticamente
+        this.horarioAcesso = LocalDateTime.now();
+        this.respondida = false;
+        this.cessado = false;
     }
 }
