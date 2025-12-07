@@ -8,8 +8,6 @@ import ListarModelos from "./pages/ListarModelos.jsx";
 import CriarModelos from "./pages/CriarModelos.jsx";
 import EditarModelo from "./pages/EditarModelo.jsx";
 import Pesquisas from "./pages/Pesquisas.jsx";
-import SelecionarPesquisa from "./pages/secionar_pesquisar.jsx";
-import ResponderPesquisa from "./pages/responder_pesquisa.jsx";
 
 const navStyle = {
   padding: "10px 32px 14px",
@@ -83,12 +81,6 @@ export default function App() {
           <Link to="/pesquisas" style={navLinkStyle}>
             Pesquisas
           </Link>
-          <Link to="/selecionar-pesquisa" style={navLinkStyle}>
-            Selecionar Pesquisa
-          </Link>
-          <Link to="/responder-pesquisa/:id" style={navLinkStyle}>
-            Responder Pesquisa
-          </Link>
         </div>
       </nav>
 
@@ -101,8 +93,6 @@ export default function App() {
         <Route path="/modelos/criar" element={<CriarModelos />} />
         <Route path="/modelos/editar/:id" element={<EditarModelo />} />
         <Route path="/pesquisas" element={<Pesquisas />} />
-        <Route path="/selecionar-pesquisa" element={<SelecionarPesquisa />} />
-        <Route path="/responder-pesquisa/:id" element={<ResponderPesquisa />} />
         <Route path="*" element={<div>404</div>} />
       </Routes>
     </>
