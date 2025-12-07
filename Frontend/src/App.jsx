@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import Login from "./pages/Login.jsx";
@@ -91,6 +90,10 @@ export default function App() {
           </Link>
         </div>
       </nav>
+      <nav style={{ background: "#000", padding: 10 }}>
+        <Link to="/" style={{ color: "#fff", marginRight: 20 }}>Home</Link>
+        <Link to="/responder/1" style={{ color: "#fff" }}>Responder Pesquisa</Link>
+      </nav>
 
       <Routes>
         <Route path="/" element={<Login />} />
@@ -101,10 +104,10 @@ export default function App() {
         <Route path="/modelos/criar" element={<CriarModelos />} />
         <Route path="/modelos/editar/:id" element={<EditarModelo />} />
         <Route path="/pesquisas" element={<Pesquisas />} />
-        <Route path="/selecionar-pesquisa" element={<SelecionarPesquisa />} />
-        <Route path="/responder-pesquisa/:id" element={<ResponderPesquisa />} />
-        <Route path="*" element={<div>404</div>} />
-      </Routes>
-    </>
-  );
-}
+            <Route path="/responder-pesquisa/:id" element={<ResponderPesquisa />} />
+            <Route path="/responder/:id" element={<ResponderPesquisa />} />
+            <Route path="*" element={<div>404</div>} />
+          </Routes>
+        </>
+      );
+    }
