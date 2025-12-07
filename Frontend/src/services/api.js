@@ -63,6 +63,22 @@ async function getPesquisasAndamento() {
   return resp.json();
 }
 
+async function getResultadosPesquisa(pesquisaId) {
+  const resp = await fetch(`${BASE_URL}/pesquisas/${pesquisaId}/resultados`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!resp.ok) throw new Error("Erro ao buscar resultados");
+  return resp.json();
+}
+
+async function getRespostasPorPergunta(pesquisaId, perguntaId) {
+  const resp = await fetch(`${BASE_URL}/pesquisas/${pesquisaId}/respostas/${perguntaId}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!resp.ok) throw new Error("Erro ao buscar respostas");
+  return resp.json();
+}
+
 export const api = {
     // Modelos - Endpoints Mapeados para ControllerModelo
     // IMPORTANTE: O backend usa UUID para IDs de Modelo e Pergunta
@@ -148,4 +164,6 @@ export default {
     api,
     getPesquisas,
     getPesquisasAndamento,
+    getResultadosPesquisa,
+    getRespostasPorPergunta,
 };
