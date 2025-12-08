@@ -158,7 +158,7 @@ public class UsuarioService {
         }
 
         if (isAdmin != null) {
-            existente.setIsAdmin(isAdmin);
+            existente.setAdmin(isAdmin);
         }
 
         usuarioRepository.save(existente);

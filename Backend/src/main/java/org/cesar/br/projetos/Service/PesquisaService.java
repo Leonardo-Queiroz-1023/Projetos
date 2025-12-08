@@ -119,10 +119,9 @@ public class PesquisaService {
     // -----------------------------------------------------------------
     public List<Pesquisa> listarPesquisasAtivasHoje() {
         LocalDate hoje = LocalDate.now();
-        // aqui presumimos que o repositório tem um método que filtra por data
-        // ex.: findByDataBetween(hoje, hoje) OU uma query custom como findAtivasNaData(hoje)
-        return pesquisaRepository.findByDataBetween(hoje, hoje);
+        return pesquisaRepository.findByDataInicioLessThanEqualAndDataFinalGreaterThanEqual(hoje, hoje);
     }
+
 
     public List<Pesquisa> listarPesquisasPorDataInicio(LocalDate data) {
         if (data == null) return List.of();
