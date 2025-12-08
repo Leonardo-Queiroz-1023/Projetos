@@ -20,17 +20,14 @@ public class ControllerLogin {
         this.usuarioService = usuarioService;
     }
 
-    // -------------------------------
-    // REGISTRO DE USUÁRIO
-    // -------------------------------
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
         try {
             boolean sucesso = usuarioService.registrarUsuario(
                     usuario.getNome(),
                     usuario.getEmail(),
-                    usuario.getSenha(),
-                    java.time.LocalDate.now()
+                    usuario.getSenhaHash(),
+                    false
             );
 
             if (sucesso) {
@@ -50,18 +47,20 @@ public class ControllerLogin {
         }
     }
 
-    // -------------------------------
-    // LOGIN
-    // -------------------------------
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        Usuario usuarioAutenticado = usuarioService.buscarUsuario(usuario.getNome());
-        
-        if (usuarioAutenticado != null && 
-            usuarioService.autenticarUsuario(usuario.getNome(), usuario.getSenha())) {
+        String email = usuario.getEmail();
+        String senhaEmTexto = usuario.getSenhaHash();
+
+        Usuario usuarioAutenticado = usuarioService.buscarPorEmail(email);
+
+        if (usuarioAutenticado != null &&
+                usuarioService.autenticarUsuario(email, senhaEmTexto)) {
             return ResponseEntity.ok(Map.of(
                     "message", "Login bem-sucedido!",
-                    "usuarioId", usuarioAutenticado.getId()
+                    "usuarioId", usuarioAutenticado.getId(),
+                    "nome", usuarioAutenticado.getNome(),
+                    "email", usuarioAutenticado.getEmail()
             ));
         } else {
             return ResponseEntity.status(401).body(Map.of(
@@ -69,5 +68,4 @@ public class ControllerLogin {
             ));
         }
     }
-
 }
