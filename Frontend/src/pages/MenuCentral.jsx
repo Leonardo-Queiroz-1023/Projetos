@@ -44,16 +44,15 @@ export default function MenuCentral() {
               {/* Pesquisas */}
               <button style={smallCard} onClick={() => navigate("/pesquisas")}>Pesquisas</button>
               <button style={smallCard} onClick={() => navigate("/selecionar-pesquisa")}>Selecionar Pesquisa</button>
-              <button style={smallCard} onClick={() => navigate("/lancar-pesquisas")}>Lançar Pesquisas</button>
-              <button style={smallCard} onClick={() => navigate("/disparar-pesquisa/1")}>Disparar Pesquisa (Modelo 1)</button>
               <button style={smallCard} onClick={() => navigate("/pesquisas-em-andamento")}>Em Andamento</button>
-              <button style={smallCard} onClick={() => navigate("/responder-pesquisa/1")}>Responder Pesquisa (ID 1)</button>
 
               {/* Resultados */}
               <button style={smallCard} onClick={() => navigate("/resultados/1")}>Resultados (Pesquisa 1)</button>
-              <button style={smallCard} onClick={() => navigate("/resultados-detalhe/1/5")}>
-                Resultado Detalhe (Pesquisa 1 • 5 estrelas)
-              </button>
+
+              {/* Removidos até os arquivos existirem */}
+              {/* <button style={smallCard} onClick={() => navigate("/disparar-pesquisa/1")}>Disparar Pesquisa (Modelo 1)</button>
+              <button style={smallCard} onClick={() => navigate("/responder-pesquisa/1")}>Responder Pesquisa (ID 1)</button>
+              <button style={smallCard} onClick={() => navigate("/resultados-detalhe/1/5")}>Resultado Detalhe</button> */}
             </div>
 
             {/* Destaque de Andamento */}
