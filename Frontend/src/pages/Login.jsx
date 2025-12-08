@@ -29,7 +29,12 @@ function Login() {
         body: JSON.stringify({ nome: username, senha: password }),
       });
 
-      const data = await response.json();
+     let data = {};
+     const contentType = response.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/ json")) {
+  data = await response.json();
+  }
 
       if (response.ok) {
         localStorage.setItem("logged", "true");
