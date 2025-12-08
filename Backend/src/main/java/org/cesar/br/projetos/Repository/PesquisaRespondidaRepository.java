@@ -2,19 +2,18 @@ package org.cesar.br.projetos.Repository;
 
 import org.cesar.br.projetos.Entidades.Pesquisa;
 import org.cesar.br.projetos.Entidades.PesquisaRespondida;
-import org.cesar.br.projetos.Entidades.Usuario;
+import org.cesar.br.projetos.Entidades.Respondente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface PesquisaRespondidaRepository extends JpaRepository<PesquisaRespondida, UUID> {
+public interface PesquisaRespondidaRepository extends JpaRepository<PesquisaRespondida, Long> {
 
-    PesquisaRespondida findByPesquisaAndUsuario(Pesquisa pesquisa, Usuario usuario);
+    PesquisaRespondida findByPesquisaAndRespondente(Pesquisa pesquisa, Respondente respondente);
 
-    List<PesquisaRespondida> findByUsuario(Usuario usuario);
+    List<PesquisaRespondida> findByRespondente(Respondente respondente);
 
     List<PesquisaRespondida> findByPesquisa(Pesquisa pesquisa);
 

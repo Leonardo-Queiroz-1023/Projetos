@@ -7,10 +7,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface ModeloRepository extends JpaRepository<Modelo, UUID> {
+public interface ModeloRepository extends JpaRepository<Modelo, Long> {
+
+    // Todos os modelos de um usuário
     List<Modelo> findByUsuario(Usuario usuario);
-    Optional<Modelo> findByIdAndUsuario(UUID id, Usuario usuario);
+
+    // Um modelo específico, garantindo que pertence ao usuário informado
+    Optional<Modelo> findByIdAndUsuario(Long id, Usuario usuario);
 }
