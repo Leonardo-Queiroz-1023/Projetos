@@ -19,17 +19,12 @@ export default function ParametrosPesquisa() {
       setLoading(true);
       setErro(null);
       const data = await api.getResultadosPesquisa(id);
-      setResultados(data?.resultados || []);
-    } catch (error) {
-      setErro("Erro ao conectar com o backend");
-      // MOCK para testar
-      setResultados([
-        { nota: 5, quantidade: 120 },
-        { nota: 4, quantidade: 80 },
-        { nota: 3, quantidade: 45 },
-        { nota: 2, quantidade: 20 },
-        { nota: 1, quantidade: 10 },
-      ]);
+      // Estruture conforme seu backend: ajuste keys se necessário
+      setResultados(Array.isArray(data?.resultados) ? data.resultados : data || []);
+    } catch (e) {
+      setErro("Erro ao carregar resultados");
+      // Opcional: mock para não ficar vazio
+      // setResultados([{ nota: 5, quantidade: 10 }, { nota: 4, quantidade: 4 }]);
     } finally {
       setLoading(false);
     }

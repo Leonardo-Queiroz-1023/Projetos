@@ -24,26 +24,44 @@ export default function MenuCentral() {
           </header>
 
           <main style={grid}>
-            <div style={summaryCard} onClick={() => navigate("/resumo")}>
+            {/* Resumo */}
+            <div style={summaryCard} onClick={() => navigate("/menu-central")}>
               <div style={summaryText}>RESUMO GERAL</div>
             </div>
 
+            {/* Coluna de atalhos */}
             <div style={rightColumn}>
-              <button style={smallCard} onClick={() => navigate("/criar-modelos")}>
-                Criar modelo CSAT
-              </button>
-              <button style={smallCard} onClick={() => navigate("/modelos")}>
-                Ver modelos CSAT
-              </button>
-              <button style={smallCard} onClick={() => navigate("/resultados")}>
-                Ver resultados
+              {/* Auth */}
+              <button style={smallCard} onClick={() => navigate("/login")}>Login</button>
+              <button style={smallCard} onClick={() => navigate("/register")}>Cadastro</button>
+
+              {/* Modelos */}
+              <button style={smallCard} onClick={() => navigate("/modelos")}>Listar Modelos</button>
+              <button style={smallCard} onClick={() => navigate("/modelos/criar")}>Criar Modelo</button>
+              {/* Exemplo de edição (troque o :id no navegador) */}
+              <button style={smallCard} onClick={() => navigate("/modelos/editar/1")}>Editar Modelo (ID 1)</button>
+
+              {/* Pesquisas */}
+              <button style={smallCard} onClick={() => navigate("/pesquisas")}>Pesquisas</button>
+              <button style={smallCard} onClick={() => navigate("/selecionar-pesquisa")}>Selecionar Pesquisa</button>
+              <button style={smallCard} onClick={() => navigate("/lancar-pesquisas")}>Lançar Pesquisas</button>
+              <button style={smallCard} onClick={() => navigate("/disparar-pesquisa/1")}>Disparar Pesquisa (Modelo 1)</button>
+              <button style={smallCard} onClick={() => navigate("/pesquisas-em-andamento")}>Em Andamento</button>
+              <button style={smallCard} onClick={() => navigate("/responder-pesquisa/1")}>Responder Pesquisa (ID 1)</button>
+
+              {/* Resultados */}
+              <button style={smallCard} onClick={() => navigate("/resultados/1")}>Resultados (Pesquisa 1)</button>
+              <button style={smallCard} onClick={() => navigate("/resultados-detalhe/1/5")}>
+                Resultado Detalhe (Pesquisa 1 • 5 estrelas)
               </button>
             </div>
 
+            {/* Destaque de Andamento */}
             <div style={ongoingCard} onClick={() => navigate("/pesquisas-em-andamento")}>
               <div style={{ fontSize: 16 }}>Pesquisas em andamento</div>
             </div>
 
+            {/* Sair */}
             <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: 12 }}>
               <button style={logoutBtn} onClick={logout}>Sair</button>
             </div>
