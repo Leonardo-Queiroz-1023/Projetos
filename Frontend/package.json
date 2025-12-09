@@ -29,5 +29,8 @@
   "main": "eslint.config.js",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "overrides": {
+    "js-yaml": "^4.1.0"
+  }
 }
