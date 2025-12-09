@@ -26,7 +26,7 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ nome: username, senha: password }),
+        body: JSON.stringify({ email: username, senhaHash: password }),
       });
 
      let data = {};
@@ -70,7 +70,7 @@ function Login() {
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
             type="text"
-            placeholder="Usuário"
+            placeholder="Email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             style={styles.input}
