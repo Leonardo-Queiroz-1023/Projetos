@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
-import api from "../services/api"; // <--- Importante que o api.js esteja atualizado
+import api from "../services/api";
 
 export default function PesquisasAndamento() {
     const navigate = useNavigate();
@@ -49,36 +49,25 @@ export default function PesquisasAndamento() {
                     data = await api.getPesquisasAtivas();
                     break;
                 case "MODELO":
-                    if (!modeloSelecionado) {
-                        throw new Error("Selecione um modelo.");
-                    }
-                    // CORREÇÃO AQUI: Usando api.js em vez de fetch direto
+                    if (!modeloSelecionado) throw new Error("Selecione um modelo.");
                     data = await api.getPesquisasPorModelo(modeloSelecionado);
                     break;
                 case "DATA_INICIO":
-                    if (!dataSelecionada) {
-                        throw new Error("Selecione uma data.");
-                    }
-                    // CORREÇÃO AQUI
+                    if (!dataSelecionada) throw new Error("Selecione uma data.");
                     data = await api.getPesquisasPorDataInicio(dataSelecionada);
                     break;
                 case "DATA_FINAL":
-                    if (!dataSelecionada) {
-                        throw new Error("Selecione uma data.");
-                    }
-                    // CORREÇÃO AQUI
+                    if (!dataSelecionada) throw new Error("Selecione uma data.");
                     data = await api.getPesquisasPorDataFinal(dataSelecionada);
                     break;
                 default:
                     data = [];
             }
 
-            // O fetchAPI do api.js já trata erros, então se chegou aqui é sucesso ou array vazio
             setPesquisas(Array.isArray(data) ? data : []);
 
         } catch (error) {
             console.error(error);
-            // Pega a mensagem do erro (que pode vir do api.js ou do throw acima)
             setErro(error.message || "Erro ao buscar pesquisas.");
         } finally {
             setLoading(false);
@@ -87,22 +76,21 @@ export default function PesquisasAndamento() {
 
     const getStatus = (dataFim) => {
         const hoje = new Date();
-        hoje.setHours(0,0,0,0);
-        // Ajuste para evitar problemas de fuso no display
+        hoje.setHours(0, 0, 0, 0);
         const fim = new Date(dataFim + "T23:59:59");
         return fim >= hoje ?
-            <span style={{color: "#4f4"}}>Em andamento</span> :
-            <span style={{color: "#f55"}}>Encerrada</span>;
+            <span style={{ color: "#4f4" }}>Em andamento</span> :
+            <span style={{ color: "#f55" }}>Encerrada</span>;
     };
 
     return (
         <div style={outer}>
-            <PerimeterBox style={{ width: "900px", padding: 0 }}>
+            <PerimeterBox style={{ width: "1000px", padding: 0 }}>
                 <div style={blackCard}>
                     <h2 style={title}>Consultar Pesquisas</h2>
 
                     <div style={filterArea}>
-                        <div style={{display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap'}}>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
 
                             <div style={filterGroup}>
                                 <label style={label}>Buscar por:</label>
@@ -110,7 +98,7 @@ export default function PesquisasAndamento() {
                                     value={tipoFiltro}
                                     onChange={(e) => {
                                         setTipoFiltro(e.target.value);
-                                        setErro(null); // Limpa erro ao mudar filtro
+                                        setErro(null);
                                     }}
                                     style={select}
                                 >
@@ -164,9 +152,9 @@ export default function PesquisasAndamento() {
                         )}
 
                         {!loading && pesquisas.length > 0 && (
-                            <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
-                                <tr style={{borderBottom: '1px solid #333', color: '#888'}}>
+                                <tr style={{ borderBottom: '1px solid #333', color: '#888' }}>
                                     <th style={th}>Nome</th>
                                     <th style={th}>Modelo</th>
                                     <th style={th}>Início</th>
@@ -177,19 +165,34 @@ export default function PesquisasAndamento() {
                                 </thead>
                                 <tbody>
                                 {pesquisas.map((p) => (
-                                    <tr key={p.id} style={{borderBottom: '1px solid #222'}}>
+                                    <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
                                         <td style={td}><strong>{p.nome}</strong></td>
-                                        <td style={td}>{p.modelo ? p.modelo.nome : (p.modelo?.id ? "Mod. " + p.modelo.id : "-")}</td>
+                                        <td style={td}>
+                                            {/* Lógica segura para exibir o nome do modelo */}
+                                            {p.modeloNome || (p.modelo && p.modelo.nome ? p.modelo.nome : (p.modeloId ? "Mod. " + p.modeloId : "-"))}
+                                        </td>
                                         <td style={td}>{new Date(p.dataInicio).toLocaleDateString()}</td>
                                         <td style={td}>{new Date(p.dataFinal).toLocaleDateString()}</td>
                                         <td style={td}>{getStatus(p.dataFinal)}</td>
                                         <td style={td}>
-                                            <button
-                                                onClick={() => navigate(`/resultados/${p.id}`)}
-                                                style={actionBtn}
-                                            >
-                                                Ver Resultados
-                                            </button>
+                                            <div style={{ display: 'flex', gap: 8 }}>
+
+                                                {/* --- BOTÃO ATUALIZADO: VISUALIZAR --- */}
+                                                <button
+                                                    onClick={() => navigate(`/pesquisas/visualizar/${p.id}`)}
+                                                    style={{ ...actionBtn, background: "#0077cc" }}
+                                                    title="Ver detalhes da pesquisa"
+                                                >
+                                                    👁️ Ver
+                                                </button>
+
+                                                <button
+                                                    onClick={() => navigate(`/resultados/${p.id}`)}
+                                                    style={actionBtn}
+                                                >
+                                                    📊 Resultados
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -207,7 +210,7 @@ export default function PesquisasAndamento() {
     );
 }
 
-// Estilos (Mantidos iguais ao seu código original)
+// Estilos
 const outer = { minHeight: "calc(100vh - 50px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif", padding: 20 };
 const blackCard = { background: "#0b0b0b", borderRadius: 18, padding: 24, color: "#fff", minHeight: 400 };
 const title = { textAlign: "center", margin: "0 0 20px 0", fontSize: 20 };

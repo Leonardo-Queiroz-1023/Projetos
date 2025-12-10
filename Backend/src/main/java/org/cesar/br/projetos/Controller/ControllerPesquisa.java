@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -23,10 +24,32 @@ public class ControllerPesquisa {
     public ControllerPesquisa(PesquisaService pesquisaService) {
         this.pesquisaService = pesquisaService;
     }
-    @GetMapping("/listar/todas")
-    public ResponseEntity<?> listarTodas() {
 
-        return ResponseEntity.ok(pesquisaService.listarTodas());
+    private Map<String, Object> converterParaMap(Pesquisa p) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", p.getId());
+        map.put("nome", p.getNome());
+        map.put("dataInicio", p.getDataInicio());
+        map.put("dataFinal", p.getDataFinal());
+
+        if (p.getModelo() != null) {
+            map.put("modeloId", p.getModelo().getId());
+            map.put("modeloNome", p.getModelo().getNome());
+        } else {
+            map.put("modeloId", null);
+            map.put("modeloNome", "Sem Modelo");
+        }
+
+        return map;
+    }
+
+    @GetMapping("/listar/todas")
+    public ResponseEntity<List<Map<String, Object>>> listarTodas() {
+        List<Pesquisa> lista = pesquisaService.listarTodas();
+        List<Map<String, Object>> resposta = lista.stream()
+                .map(this::converterParaMap)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resposta);
     }
 
     @PostMapping("/criar")
@@ -65,7 +88,7 @@ public class ControllerPesquisa {
         Pesquisa p = pesquisaService.buscarPesquisaPorId(id);
 
         if (p != null) {
-            return ResponseEntity.ok(p);
+            return ResponseEntity.ok(converterParaMap(p));
         }
         return ResponseEntity.status(404).body(Map.of("error", "Pesquisa não encontrada."));
     }
@@ -104,21 +127,32 @@ public class ControllerPesquisa {
     }
 
     @GetMapping("/listar/modelo/{modeloId}")
-    public ResponseEntity<?> listarPorModelo(@PathVariable Long modeloId) {
+    public ResponseEntity<List<Map<String, Object>>> listarPorModelo(@PathVariable Long modeloId) {
         List<Pesquisa> lista = pesquisaService.listarPesquisasPorModelo(modeloId);
-        return ResponseEntity.ok(lista);
+        List<Map<String, Object>> resposta = lista.stream()
+                .map(this::converterParaMap)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resposta);
     }
 
     @GetMapping("/listar/ativas")
-    public ResponseEntity<?> listarAtivas() {
-        return ResponseEntity.ok(pesquisaService.listarPesquisasAtivasHoje());
+    public ResponseEntity<List<Map<String, Object>>> listarAtivas() {
+        List<Pesquisa> lista = pesquisaService.listarPesquisasAtivasHoje();
+        List<Map<String, Object>> resposta = lista.stream()
+                .map(this::converterParaMap)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resposta);
     }
 
     @GetMapping("/listar/data-inicio")
     public ResponseEntity<?> listarPorDataInicio(@RequestParam String data) {
         try {
             LocalDate date = LocalDate.parse(data);
-            return ResponseEntity.ok(pesquisaService.listarPesquisasPorDataInicio(date));
+            List<Pesquisa> lista = pesquisaService.listarPesquisasPorDataInicio(date);
+            List<Map<String, Object>> resposta = lista.stream()
+                    .map(this::converterParaMap)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(resposta);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Formato de data inválido. Use YYYY-MM-DD."));
         }
@@ -128,7 +162,11 @@ public class ControllerPesquisa {
     public ResponseEntity<?> listarPorDataFinal(@RequestParam String data) {
         try {
             LocalDate date = LocalDate.parse(data);
-            return ResponseEntity.ok(pesquisaService.listarPesquisasPorDataFinal(date));
+            List<Pesquisa> lista = pesquisaService.listarPesquisasPorDataFinal(date);
+            List<Map<String, Object>> resposta = lista.stream()
+                    .map(this::converterParaMap)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(resposta);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Formato de data inválido. Use YYYY-MM-DD."));
         }

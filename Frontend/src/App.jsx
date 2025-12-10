@@ -13,6 +13,8 @@ import CriarPesquisa from "./pages/CriarPesquisa.jsx";
 import SelecionarPesquisa from "./pages/secionar_pesquisar.jsx";
 import PesquisasAndamento from "./pages/pesquisas_andamento.jsx";
 import ParametrosPesquisa from "./pages/parametros_pesquisa.jsx";
+import VisualizarPesquisa from "./pages/VisualizarPesquisa.jsx";
+
 
 // ATENÇÃO: resultatos_detalhe.jsx e responder_pesquisa.jsx não estão na pasta src/pages.
 // Adicione as rotas quando os arquivos existirem.
@@ -70,7 +72,7 @@ export default function App() {
         <Route path="/pesquisas-em-andamento" element={<PesquisasAndamento />} />
 
         <Route path="/resultados/:id" element={<ParametrosPesquisa />} />
-
+        <Route path="/pesquisas/visualizar/:id" element={<VisualizarPesquisa />} />
         {/* Adicione quando criar os arquivos: */}
         {/* <Route path="/responder-pesquisa/:id" element={<ResponderPesquisa />} /> */}
         {/* <Route path="/resultados-detalhe/:pesquisaId/:perguntaId" element={<ResultadosDetalhe />} /> */}

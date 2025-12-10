@@ -27,7 +27,7 @@ export default function Pesquisas() {
             <div style={{ textAlign: "center" }}>
                 <h1 style={{ marginBottom: 20 }}>Pesquisas</h1>
                 <p style={{ marginBottom: 25 }}>
-                    Selecione uma área de pesquisas.
+                    Selecione uma opção:
                 </p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
@@ -39,12 +39,14 @@ export default function Pesquisas() {
                         ➕ Criar Nova Pesquisa
                     </button>
 
+                    {/* --- BOTÃO ATUALIZADO --- */}
                     <button
                         style={btn}
-                        onClick={() => alert("Funcionalidade futura: Agendamento")}
+                        onClick={() => navigate("/pesquisas-em-andamento")}
                     >
-                        Agendamento
+                        🔍 Pesquisas em Andamento
                     </button>
+                    {/* ------------------------ */}
 
                     <button
                         style={btn}
@@ -63,7 +65,7 @@ export default function Pesquisas() {
 }
 
 const btn = {
-    width: "220px",
+    width: "250px", // Aumentei um pouco a largura para caber o texto
     padding: "10px 16px",
     borderRadius: "8px",
     border: "none",
@@ -71,5 +73,6 @@ const btn = {
     background: "#000",
     color: "#fff",
     margin: "0 auto",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    fontSize: "14px"
 };
