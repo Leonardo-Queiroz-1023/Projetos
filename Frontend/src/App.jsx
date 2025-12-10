@@ -15,15 +15,13 @@ import PesquisasAndamento from "./pages/pesquisas_andamento.jsx";
 import ParametrosPesquisa from "./pages/parametros_pesquisa.jsx";
 import VisualizarPesquisa from "./pages/VisualizarPesquisa.jsx";
 
-// --- NOVOS IMPORTS ADICIONADOS ---
 import LancarPesquisas from "./pages/LancarPesquisas.jsx";
 import DispararPesquisa from "./pages/DispararPesquisa.jsx";
 import ResponderPesquisa from "./pages/ResponderPesquisa.jsx";
-// ---------------------------------
 
 export default function App() {
     const navStyle = {
-        padding: "10px 32px 14px",
+        padding: "-50px 32px 18px", // mais alto
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -36,15 +34,43 @@ export default function App() {
         boxSizing: "border-box",
         zIndex: 10,
     };
-    const brandStyle = { display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 };
-    const navLinksStyle = { display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", flexWrap: "wrap" };
-    const navLinkStyle = { color: "white", textDecoration: "none", fontWeight: 500 };
+
+    const brandStyle = {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 0, // mais espaço entre logo e links
+    };
+
+    const brandLogoStyle = {
+        height: "200px",   // 👈 aumente para 90/100 se quiser ainda maior
+        maxWidth: "100%",
+        objectFit: "contain",
+    };
+
+    const navLinksStyle = {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "20px",
+        flexWrap: "wrap",
+    };
+
+    const navLinkStyle = {
+        color: "white",
+        textDecoration: "none",
+        fontWeight: 500,
+    };
 
     return (
         <>
             <nav style={navStyle}>
                 <div style={brandStyle}>
-                    <span style={{ fontSize: 24, color: "white" }}>🧠 SMART SURVEYS</span>
+                    <img
+                        src="/LogoPositivo.png"
+                        alt="Smart Surveys"
+                        style={brandLogoStyle}
+                    />
                 </div>
                 <div style={navLinksStyle}>
                     <Link to="/login" style={navLinkStyle}>Login</Link>
@@ -75,18 +101,19 @@ export default function App() {
                 <Route path="/resultados" element={<ParametrosPesquisa />} />
                 <Route path="/pesquisas/visualizar/:id" element={<VisualizarPesquisa />} />
 
-                {/* --- NOVAS ROTAS ADICIONADAS --- */}
-
-                {/* 1. Tela para escolher qual modelo enviar */}
+                {/* Disparo & resposta */}
                 <Route path="/lancar-pesquisas" element={<LancarPesquisas />} />
-
-                {/* 2. Tela para configurar o envio (destinatários) */}
                 <Route path="/disparar-pesquisa/:pesquisaId" element={<DispararPesquisa />} />
-                {/* 3. Tela pública para o usuário responder (Link do email) */}
                 <Route path="/responder/:pesquisaId/:respondenteId" element={<ResponderPesquisa />} />
-                {/* ------------------------------- */}
 
-                <Route path="*" element={<div style={{ padding: 40, color: "white", textAlign: "center" }}>404 - Página não encontrada</div>} />
+                <Route
+                    path="*"
+                    element={
+                        <div style={{ padding: 40, color: "white", textAlign: "center" }}>
+                            404 - Página não encontrada
+                        </div>
+                    }
+                />
             </Routes>
         </>
     );
