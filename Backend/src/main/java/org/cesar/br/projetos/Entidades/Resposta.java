@@ -1,6 +1,7 @@
 package org.cesar.br.projetos.Entidades;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,7 @@ public class Resposta implements Serializable {
     // Pergunta à qual esta resposta se refere
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pergunta_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Pergunta pergunta;
 
     // Submissão (PesquisaRespondida) à qual esta resposta pertence
