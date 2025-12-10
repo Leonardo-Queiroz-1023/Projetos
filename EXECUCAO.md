@@ -40,7 +40,7 @@ O backend usa:
 cd Backend
 
 # Compilar e instalar dependências
-# delete manualmente target e rode
+DELETE manualmente target e rode
 .\mvnw clean install -DskipTests
 # Executar a aplicação
 .\mvnw spring-boot:run

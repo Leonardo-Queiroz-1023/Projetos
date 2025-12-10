@@ -17,7 +17,7 @@ export default function CriarModelos() {
     const [showPerguntaBox, setShowPerguntaBox] = useState(false);
 
     const [message, setMessage] = useState("");
-
+    const [loading, setLoading] = useState(false);
     const adicionarPergunta = () => {
         if (!perguntaAtual.trim()) return;
 
@@ -38,39 +38,40 @@ export default function CriarModelos() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (loading) return;
+
+        setLoading(true);
+        setMessage("");
+
         try {
-            // 1. Criar o modelo sem perguntas
             const modeloPayload = {
                 nome,
                 descricao,
                 plataformasDisponiveis: plataforma,
             };
 
-            console.log("📤 Criando modelo:", modeloPayload);
             const result = await api.createModelo(modeloPayload);
-            console.log("✅ Modelo criado:", result);
 
-            // 2. Se houver perguntas, adicionar uma por uma
             if (perguntas.length > 0 && result.id) {
-                console.log("➕ Adicionando", perguntas.length, "perguntas...");
                 for (const p of perguntas) {
                     await api.addPerguntaToModelo(result.id, { questao: p.texto });
                 }
-                console.log("✅ Todas as perguntas adicionadas!");
             }
 
             setMessage("✅ Modelo criado com sucesso!");
-            
-            // Aguarda e redireciona para listar modelos
+
             setTimeout(() => {
                 navigate("/modelos");
             }, 1000);
+
         } catch (error) {
             console.error("❌ Erro ao criar:", error);
             setMessage("❌ Erro ao criar modelo: " + error.message);
+
+
+            setLoading(false);
         }
     };
-
     return (
         <div
             style={{
@@ -135,14 +136,24 @@ export default function CriarModelos() {
                         </button>
                     </div>
 
-                    <button type="submit" style={styles.buttonPrimary}>
-                        Salvar modelo
+                    <button
+                        type="submit"
+                        // Mescla o estilo base com estilo condicional de disabled
+                        style={{
+                            ...styles.buttonPrimary,
+                            opacity: loading ? 0.6 : 1,
+                            cursor: loading ? 'not-allowed' : 'pointer'
+                        }}
+                        disabled={loading} // Desabilita o clique nativo
+                    >
+                        {loading ? "Salvando..." : "Salvar modelo"}
                     </button>
 
                     <button
                         type="button"
                         style={styles.buttonSecondary}
                         onClick={() => navigate("/modelos")}
+                        disabled={loading} // Opcional: Bloquear cancelar também
                     >
                         Cancelar
                     </button>

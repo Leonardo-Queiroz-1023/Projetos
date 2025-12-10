@@ -38,12 +38,17 @@ export default function CriarPesquisa() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // 1. Bloqueio imediato se já estiver carregando
+        if (loading) return;
+
         setLoading(true);
         setMessage("");
 
+        // Validação simples
         if (!modeloId) {
             setMessage("Selecione um modelo válido.");
-            setLoading(false);
+            setLoading(false); // Desbloqueia para corrigir
             return;
         }
 
@@ -59,15 +64,17 @@ export default function CriarPesquisa() {
 
             setMessage("✅ Pesquisa criada com sucesso!");
 
-            // REDIRECIONAMENTO DE VOLTA PARA O MENU /pesquisas
+            // 2. Mantenha o loading = true enquanto espera o redirecionamento
+            // Não usamos 'finally' aqui para evitar cliques extras neste intervalo
             setTimeout(() => {
                 navigate("/pesquisas");
             }, 1000);
 
         } catch (error) {
             console.error("Erro ao criar pesquisa:", error);
-            setMessage("❌ Erro ao criar pesquisa. Verifique as datas ou conexão ou se o modelo da pesquisa têm 0 perguntas.");
-        } finally {
+            setMessage("❌ Erro ao criar pesquisa. Verifique as datas, conexão ou se o modelo tem perguntas.");
+
+            // 3. Só desbloqueia se der erro, para tentar novamente
             setLoading(false);
         }
     };
@@ -135,13 +142,23 @@ export default function CriarPesquisa() {
                     </div>
 
                     <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
-                        <button type="submit" disabled={loading} style={styles.buttonPrimary}>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            style={{
+                                ...styles.buttonPrimary,
+                                opacity: loading ? 0.6 : 1,
+                                cursor: loading ? 'not-allowed' : 'pointer'
+                            }}
+                        >
                             {loading ? "Salvando..." : "Lançar Pesquisa"}
                         </button>
+
                         <button
                             type="button"
                             onClick={() => navigate("/pesquisas")}
                             style={styles.buttonSecondary}
+                            disabled={loading} // Opcional: Bloquear cancelar
                         >
                             Cancelar
                         </button>
