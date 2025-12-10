@@ -39,14 +39,21 @@ export default function Pesquisas() {
                         ➕ Criar Nova Pesquisa
                     </button>
 
-                    {/* --- BOTÃO ATUALIZADO --- */}
+                    {/* --- NOVO BOTÃO ADICIONADO --- */}
+                    <button
+                        style={btn}
+                        onClick={() => navigate("/lancar-pesquisas")}
+                    >
+                        🚀 Lançar Pesquisa
+                    </button>
+                    {/* ----------------------------- */}
+
                     <button
                         style={btn}
                         onClick={() => navigate("/pesquisas-em-andamento")}
                     >
                         🔍 Pesquisas em Andamento
                     </button>
-                    {/* ------------------------ */}
 
                     <button
                         style={btn}
@@ -65,7 +72,7 @@ export default function Pesquisas() {
 }
 
 const btn = {
-    width: "250px", // Aumentei um pouco a largura para caber o texto
+    width: "250px",
     padding: "10px 16px",
     borderRadius: "8px",
     border: "none",

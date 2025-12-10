@@ -232,4 +232,25 @@ public class ControllerPesquisa {
         long total = pesquisaService.contarTotalRespostas(pesquisaId);
         return ResponseEntity.ok(Map.of("total", total));
     }
+
+    // --- AGORA ESTÁ DENTRO DA CLASSE (CORRETO) ---
+    @PostMapping("/disparar")
+    public ResponseEntity<?> dispararEmail(@RequestBody Map<String, Object> body) {
+        try {
+            Long pesquisaId = Long.valueOf(body.get("pesquisaId").toString());
+            String nome = (String) body.get("nome");
+            String email = (String) body.get("email");
+
+            boolean enviado = pesquisaService.dispararLinkPorEmail(pesquisaId, nome, email);
+
+            if (enviado) {
+                return ResponseEntity.ok(Map.of("message", "E-mail enviado com sucesso!"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("error", "Erro ao processar dados. Verifique se a pesquisa existe."));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erro interno ao enviar e-mail: " + e.getMessage()));
+        }
+    }
+
 }

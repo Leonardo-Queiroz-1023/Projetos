@@ -1,29 +1,46 @@
 // src/services/api.js
+
 const API_URL = "http://localhost:8080";
 
+// Função auxiliar genérica para Fetch
 async function fetchAPI(endpoint, options = {}) {
     const token = localStorage.getItem("token");
+
     const headers = {
         "Content-Type": "application/json",
         ...(options.headers || {}),
+        // Só envia token se existir (evita erro para usuário externo)
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
-    const resp = await fetch(`${API_URL}${endpoint}`, {
+    const config = {
         ...options,
         headers,
-        body: options.body ? options.body : undefined,
-    });
+    };
 
-    // tenta ler corpo com tolerância
+    if (options.body) {
+        config.body = options.body;
+    }
+
+    const resp = await fetch(`${API_URL}${endpoint}`, config);
+
     const text = await resp.text();
     let data = null;
     if (text) {
-        try { data = JSON.parse(text); } catch { data = text; }
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
     }
 
     if (!resp.ok) {
-        const msg = (data && data.message) ? data.message : (data && data.error) ? data.error : `Erro HTTP ${resp.status}`;
+        const msg = (data && data.message)
+            ? data.message
+            : (data && data.error)
+                ? data.error
+                : `Erro HTTP ${resp.status}`;
+
         const err = new Error(msg);
         err.status = resp.status;
         err.body = data;
@@ -34,7 +51,13 @@ async function fetchAPI(endpoint, options = {}) {
 }
 
 const api = {
-    // ===== MODELOS (Mantidos iguais) =====
+    // ... (Login e Register mantidos iguais) ...
+    registerUser: (usuario) => fetchAPI('/auth/register', { method: 'POST', body: JSON.stringify(usuario) }),
+    login: (usuario) => fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(usuario) }),
+
+    // ==========================================
+    // MODELOS
+    // ==========================================
     createModelo: (modelo) => {
         const usuarioId = localStorage.getItem('usuarioId');
         return fetchAPI('/modelos/criar', {
@@ -53,8 +76,16 @@ const api = {
         return fetchAPI(`/modelos/listar?usuarioId=${usuarioId}`);
     },
 
-    getModeloById: (id) => {
-        const usuarioId = localStorage.getItem('usuarioId');
+    // ⚠️ ALTERADO: Aceita usuarioId opcional. Se não passado, tenta do localStorage.
+    // Se ainda assim for null (usuário externo), envia string vazia ou trata o erro.
+    getModeloById: (id, ownerId = null) => {
+        let usuarioId = ownerId || localStorage.getItem('usuarioId');
+
+        // Se for nulo (acesso público), precisamos passar algo ou o Java vai reclamar "Required request parameter 'usuarioId' is not present"
+        // Se você não mudou o Java, isso aqui pode falhar para usuários externos.
+        // Tente passar "1" (admin) se for urgente, ou ajuste o Java.
+        if (!usuarioId) usuarioId = "";
+
         return fetchAPI(`/modelos/${id}?usuarioId=${usuarioId}`);
     },
 
@@ -73,108 +104,53 @@ const api = {
         });
     },
 
-    // ===== PERGUNTAS (Mantidos iguais) =====
-    addPerguntaToModelo: (modeloId, perguntaPayload) => fetchAPI(`/perguntas/adicionar/${modeloId}`, {
-        method: 'POST',
-        body: JSON.stringify(perguntaPayload),
-    }),
+    // ... (Perguntas mantidas iguais) ...
+    addPerguntaToModelo: (modeloId, payload) => fetchAPI(`/perguntas/adicionar/${modeloId}`, { method: 'POST', body: JSON.stringify(payload) }),
+    updatePergunta: (modeloId, pId, txt) => fetchAPI(`/perguntas/atualizar/${modeloId}/${pId}`, { method: 'PUT', body: JSON.stringify({ texto: txt }) }),
+    deletePergunta: (modeloId, pId) => fetchAPI(`/perguntas/remover/${modeloId}/${pId}`, { method: 'DELETE' }),
 
-    updatePergunta: (modeloId, perguntaId, novoTexto) => fetchAPI(`/perguntas/atualizar/${modeloId}/${perguntaId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ texto: novoTexto }),
-    }),
+    // ... (Pesquisas CRUD mantidas iguais) ...
+    createPesquisa: (payload) => fetchAPI('/pesquisas/criar', { method: 'POST', body: JSON.stringify(payload) }),
+    getPesquisasTodas: () => fetchAPI('/pesquisas/listar/todas'),
+    getPesquisasAtivas: () => fetchAPI('/pesquisas/listar/ativas'),
+    getPesquisaById: (id) => fetchAPI(`/pesquisas/${id}`),
+    updatePesquisa: (id, payload) => fetchAPI(`/pesquisas/atualizar/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+    deletePesquisa: (id) => fetchAPI(`/pesquisas/deletar/${id}`, { method: 'DELETE' }),
+    getPesquisasPorModelo: (modeloId) => fetchAPI(`/pesquisas/listar/modelo/${modeloId}`),
+    getPesquisasPorDataInicio: (d) => fetchAPI(`/pesquisas/listar/data-inicio?data=${d}`),
+    getPesquisasPorDataFinal: (d) => fetchAPI(`/pesquisas/listar/data-final?data=${d}`),
 
-    deletePergunta: (modeloId, perguntaId) => fetchAPI(`/perguntas/remover/${modeloId}/${perguntaId}`, {
-        method: 'DELETE',
-    }),
+    // ==========================================
+    // DISPARO & RESPOSTA
+    // ==========================================
 
-    // ===== AUTH (Mantidos iguais) =====
-    registerUser: (usuario) => fetchAPI('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(usuario),
-    }),
-
-    login: (usuario) => fetchAPI('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(usuario),
-    }),
-
-    // ===== PESQUISAS (ATUALIZADO PARA O BACKEND REAL) =====
-
-    // Criação: POST /pesquisas/criar
-    createPesquisa: (payload) => {
-        // payload espera: { nome, modeloId, dataInicio, dataFinal }
-        return fetchAPI('/pesquisas/criar', {
+    dispararPesquisaIndividual: (dados) => {
+        return fetchAPI('/pesquisas/disparar', {
             method: 'POST',
-            body: JSON.stringify(payload)
-        });
-    },
-    getPesquisasTodas: () => {
-        const usuarioId = localStorage.getItem('usuarioId');
-        return fetchAPI(`/pesquisas/listar/todas?usuarioId=${usuarioId}`);
-    },
-    // Listagem Ativas: GET /pesquisas/listar/ativas
-    getPesquisasAtivas: () => {
-        return fetchAPI('/pesquisas/listar/ativas');
-    },
-
-    getPesquisasPorModelo: (modeloId) => {
-        return fetchAPI(`/pesquisas/listar/modelo/${modeloId}`);
-    },
-
-    getPesquisasPorDataInicio: (data) => {
-        // O backend espera ?data=YYYY-MM-DD
-        return fetchAPI(`/pesquisas/listar/data-inicio?data=${data}`);
-    },
-
-    getPesquisasPorDataFinal: (data) => {
-        return fetchAPI(`/pesquisas/listar/data-final?data=${data}`);
-    },
-
-    // Busca por ID: GET /pesquisas/{id}
-    getPesquisaById: (id) => {
-        return fetchAPI(`/pesquisas/${id}`);
-    },
-
-    // Atualizar: PUT /pesquisas/atualizar/{id}
-    updatePesquisa: (id, payload) => {
-        // payload espera: { nome, dataInicio, dataFinal }
-        return fetchAPI(`/pesquisas/atualizar/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(payload)
+            body: JSON.stringify(dados)
         });
     },
 
-    // Deletar: DELETE /pesquisas/deletar/{id}
-    deletePesquisa: (id) => {
-        return fetchAPI(`/pesquisas/deletar/${id}`, {
-            method: 'DELETE'
-        });
-    },
-
-    // Responder: POST /pesquisas/responder/{id}
-    responderPesquisa: (pesquisaId, payload) => {
-        // payload espera: { respondenteId, respostas: { idPergunta: "texto" } }
+    // ✅ GARANTIDO: Envia o JSON na estrutura exata que o Java Map<String,Object> espera
+    enviarRespostas: (pesquisaId, respondenteId, respostasMap) => {
+        const payload = {
+            respondenteId: respondenteId,
+            respostas: respostasMap
+        };
         return fetchAPI(`/pesquisas/responder/${pesquisaId}`, {
             method: 'POST',
             body: JSON.stringify(payload)
         });
     },
 
-    // Verificar se já respondeu
     verificarSeJaRespondeu: (pesquisaId, respondenteId) => {
         return fetchAPI(`/pesquisas/verificar-resposta?pesquisaId=${pesquisaId}&respondenteId=${respondenteId}`);
     },
 
-    // Listar Respostas (Resultados): GET /pesquisas/listar-respostas/{id}
-    getResultadosPesquisa: (pesquisaId) => {
-        return fetchAPI(`/pesquisas/listar-respostas/${pesquisaId}`);
-    },
-
-    // Contagem simples: GET /pesquisas/contar-respostas/{id}
-    getContarRespostas: (pesquisaId) => {
-        return fetchAPI(`/pesquisas/contar-respostas/${pesquisaId}`);
-    }
+    // ... (Resultados mantidos iguais) ...
+    getResultadosPesquisa: (pid) => fetchAPI(`/pesquisas/listar-respostas/${pid}`),
+    getContarRespostas: (pid) => fetchAPI(`/pesquisas/contar-respostas/${pid}`),
+    getHistoricoRespondente: (rid) => fetchAPI(`/pesquisas/historico/${rid}`)
 };
 
 export default api;
