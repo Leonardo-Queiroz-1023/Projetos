@@ -104,7 +104,6 @@ export default function ResultadosGerais() {
             <PerimeterBox style={{ width: "700px", padding: 0, overflow: "hidden" }}>
                 <div style={blackCard}>
 
-                    {/* --- CABEÇALHO COM DROPDOWN --- */}
                     <header style={{ marginBottom: 30, textAlign: 'center', borderBottom: '1px solid #333', paddingBottom: 20 }}>
                         <h2 style={title}>📊 DASHBOARD DE RESULTADOS</h2>
                         <p style={{ color: '#888', fontSize: 14, marginBottom: 15 }}>Selecione uma pesquisa para ver os gráficos</p>
@@ -117,7 +116,8 @@ export default function ResultadosGerais() {
                             <option value="">-- Selecione uma Pesquisa --</option>
                             {listaPesquisas.map((p) => (
                                 <option key={p.id} value={p.id}>
-                                    {p.nome} ({new Date(p.dataInicio).toLocaleDateString()})
+                                    {/* ✅ ADICIONADO: Contagem de respostas ao lado do nome */}
+                                    {p.nome} ({new Date(p.dataInicio).toLocaleDateString()}) — {p.totalRespondentes || 0} respostas
                                 </option>
                             ))}
                         </select>
@@ -145,7 +145,7 @@ export default function ResultadosGerais() {
                             <div style={mediaCard}>
                                 <div style={mediaNumero}>{media}</div>
                                 <div style={{ marginBottom: 8 }}>{renderEstrelas(parseFloat(media))}</div>
-                                <div style={mediaTexto}>{totalAvaliacoes} respostas</div>
+                                <div style={mediaTexto}>{totalAvaliacoes} perguntas respondidas</div>
                             </div>
 
                             {/* BARRAS */}

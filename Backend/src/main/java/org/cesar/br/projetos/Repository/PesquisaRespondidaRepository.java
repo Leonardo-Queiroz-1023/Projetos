@@ -11,7 +11,9 @@ import java.util.List;
 @Repository
 public interface PesquisaRespondidaRepository extends JpaRepository<PesquisaRespondida, Long> {
 
-    PesquisaRespondida findByPesquisaAndRespondente(Pesquisa pesquisa, Respondente respondente);
+    List<PesquisaRespondida> findByPesquisaAndRespondente(Pesquisa pesquisa, Respondente respondente);
+
+    long countByPesquisaAndRespondente(Pesquisa pesquisa, Respondente respondente);
 
     List<PesquisaRespondida> findByRespondente(Respondente respondente);
 

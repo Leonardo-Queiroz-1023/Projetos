@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // ✅ Mudei para useParams
+import { useParams } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 import api from "../services/api";
 
 export default function ResponderPesquisa() {
-    // ✅ Captura os parâmetros definidos na rota do App.jsx: /responder/:pesquisaId/:respondenteId
     const { pesquisaId, respondenteId } = useParams();
 
     const [pesquisa, setPesquisa] = useState(null);
@@ -24,35 +23,16 @@ export default function ResponderPesquisa() {
             return;
         }
         carregarDados();
-        // eslint-disable-next-line
     }, [pesquisaId, respondenteId]);
 
     async function carregarDados() {
         try {
             setLoading(true);
 
-            // 1. Verifica se já respondeu (Opcional, mas evita reenvio)
-            try {
-                const check = await api.verificarSeJaRespondeu(pesquisaId, respondenteId);
-                if (check && check.respondeu) {
-                    setEnviado(true);
-                    setLoading(false);
-                    return;
-                }
-            } catch (ignored) {
-                // Se der erro na verificação, segue o fluxo normal
-            }
-
-            // 2. Busca a Pesquisa
             const dadosPesquisa = await api.getPesquisaById(pesquisaId);
             setPesquisa(dadosPesquisa);
 
-            // 3. Busca o Modelo e as Perguntas
             if (dadosPesquisa.modeloId) {
-                // ⚠️ ATENÇÃO: Seu backend exige usuarioId para ver o modelo.
-                // Usuários externos não têm usuarioId no localStorage.
-                // O ideal seria criar um endpoint público no Java: /modelos/publico/{id}
-                // Por enquanto, o api.js tentará enviar null e pode dar erro 400 se o backend for rígido.
                 const dadosModelo = await api.getModeloById(dadosPesquisa.modeloId);
 
                 const listaPerguntas = dadosModelo.perguntas || dadosModelo.modelo?.perguntas || [];
@@ -81,7 +61,6 @@ export default function ResponderPesquisa() {
     }
 
     async function handleEnviar() {
-        // Validação simples
         const faltantes = perguntas.filter((p) => !respostas[p.id]);
         if (faltantes.length > 0) {
             alert(`Faltam responder ${faltantes.length} perguntas.`);
@@ -100,8 +79,6 @@ export default function ResponderPesquisa() {
             setEnviando(false);
         }
     }
-
-    // --- RENDERIZAÇÃO ---
 
     if (erro) {
         return (
@@ -135,7 +112,6 @@ export default function ResponderPesquisa() {
     }
 
     const pergunta = perguntas[perguntaAtual];
-    // Evita erro de divisão por zero
     const total = perguntas.length || 1;
     const progresso = ((perguntaAtual + 1) / total) * 100;
     const respostaAtual = respostas[pergunta.id];
@@ -143,7 +119,6 @@ export default function ResponderPesquisa() {
     return (
         <div style={styles.container}>
             <PerimeterBox style={{ width: "100%", maxWidth: "600px", padding: 0, overflow: "hidden" }}>
-                {/* Barra de Progresso */}
                 <div style={{ width: "100%", height: "6px", background: "#f0f0f0" }}>
                     <div style={{ width: `${progresso}%`, height: "100%", background: "#000", transition: "width 0.3s" }} />
                 </div>
@@ -154,10 +129,9 @@ export default function ResponderPesquisa() {
                     </div>
 
                     <h2 style={{ fontSize: "1.5rem", marginBottom: "30px", color: "#222" }}>
-                        {pergunta.questao ||pergunta.texto || "Pergunta sem texto"}
+                        {pergunta.questao || pergunta.texto || "Pergunta sem texto"}
                     </h2>
 
-                    {/* Renderização das opções (Escala 1-5) */}
                     <div style={styles.optionsGrid}>
                         {[1, 2, 3, 4, 5].map((nota) => (
                             <button
@@ -174,7 +148,7 @@ export default function ResponderPesquisa() {
                             </button>
                         ))}
                     </div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#666', marginBottom: 20}}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#666', marginBottom: 20 }}>
                         <span>Discordo</span>
                         <span>Concordo</span>
                     </div>
@@ -204,7 +178,6 @@ export default function ResponderPesquisa() {
     );
 }
 
-// Mantive os estilos originais para economizar espaço visual, eles estavam ótimos.
 const styles = {
     container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", padding: 20, fontFamily: "sans-serif" },
     optionsGrid: { display: "flex", gap: 10, justifyContent: "center", marginBottom: 10 },
