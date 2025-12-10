@@ -1,6 +1,6 @@
 // src/services/api.js
 
-const API_URL = "https://projetos-1f39.onrender.com/";
+const API_URL = "https://projetos-1f39.onrender.com";
 
 // Função auxiliar genérica para Fetch
 async function fetchAPI(endpoint, options = {}) {
