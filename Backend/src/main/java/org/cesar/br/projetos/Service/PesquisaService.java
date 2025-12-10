@@ -51,7 +51,7 @@ public class PesquisaService {
 
         // B. Gera o Link
         // Aponta para a rota do REACT: /responder/:pesquisaId/:respondenteId
-        String link = "http://localhost:5173/responder/" + pesquisaId + "/" + respondente.getId();
+        String link = "https://projetos-1f39.onrender.com/responder/" + pesquisaId + "/" + respondente.getId();
 
         // C. Monta a mensagem
         String assunto = "Convite para Pesquisa: " + pesquisa.getNome();
