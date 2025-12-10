@@ -17,11 +17,16 @@ export default function PesquisasAndamento() {
 
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState(null);
+    const logged = localStorage.getItem("logged") === "true";
 
     useEffect(() => {
-        carregarModelos();
-        buscarPesquisas();
-    }, []);
+        if (!logged) {
+            navigate("/login?msg=Faça%20login%20para%20acessar%20o%20menu", { replace: true });
+        } else {
+            carregarModelos();
+            buscarPesquisas();
+        }
+    }, [logged, navigate]);
 
     async function carregarModelos() {
         try {
@@ -82,7 +87,7 @@ export default function PesquisasAndamento() {
             <span style={{ color: "#4f4" }}>Em andamento</span> :
             <span style={{ color: "#f55" }}>Encerrada</span>;
     };
-
+    if (!logged) return null;
     return (
         <div style={outer}>
             <PerimeterBox style={{ width: "1000px", padding: 0 }}>
