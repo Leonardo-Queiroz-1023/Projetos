@@ -13,13 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-        uniqueConstraints = {
-                // Garante no banco que um mesmo Respondente só tenha
-                // UMA submissão por Pesquisa
-                @UniqueConstraint(columnNames = {"pesquisa_id", "respondente_id"})
-        }
-)
 @Getter
 @Setter
 @NoArgsConstructor

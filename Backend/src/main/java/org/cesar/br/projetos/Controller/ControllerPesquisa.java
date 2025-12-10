@@ -32,6 +32,14 @@ public class ControllerPesquisa {
         map.put("dataInicio", p.getDataInicio());
         map.put("dataFinal", p.getDataFinal());
 
+        try {
+            long total = pesquisaService.contarTotalRespostas(p.getId());
+            map.put("totalRespondentes", total);
+        } catch (Exception e) {
+            map.put("totalRespondentes", 0);
+        }
+        // ------------------------
+
         if (p.getModelo() != null) {
             map.put("modeloId", p.getModelo().getId());
             map.put("modeloNome", p.getModelo().getNome());
@@ -233,7 +241,6 @@ public class ControllerPesquisa {
         return ResponseEntity.ok(Map.of("total", total));
     }
 
-    // --- AGORA ESTÁ DENTRO DA CLASSE (CORRETO) ---
     @PostMapping("/disparar")
     public ResponseEntity<?> dispararEmail(@RequestBody Map<String, Object> body) {
         try {
