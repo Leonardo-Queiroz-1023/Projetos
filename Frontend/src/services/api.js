@@ -112,7 +112,7 @@ const api = {
     getPesquisasAtivas: () => fetchAPI('/pesquisas/listar/ativas'),
     getPesquisaById: (id) => fetchAPI(`/pesquisas/${id}`),
     updatePesquisa: (id, payload) => fetchAPI(`/pesquisas/atualizar/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-    deletePesquisa: (id) => fetchAPI(`/pesquisas/deletar/${id}`, { method: 'DELETE' }),
+    deletarPesquisa: (id) => fetchAPI(`/pesquisas/deletar/${id}`, { method: 'DELETE' }),
     getPesquisasPorModelo: (modeloId) => fetchAPI(`/pesquisas/listar/modelo/${modeloId}`),
     getPesquisasPorDataInicio: (d) => fetchAPI(`/pesquisas/listar/data-inicio?data=${d}`),
     getPesquisasPorDataFinal: (d) => fetchAPI(`/pesquisas/listar/data-final?data=${d}`),

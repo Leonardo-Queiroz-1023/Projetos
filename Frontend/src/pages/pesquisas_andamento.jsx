@@ -45,7 +45,6 @@ export default function PesquisasAndamento() {
 
         try {
             let data = [];
-
             switch (tipoFiltro) {
                 case "TODAS":
                     data = await api.getPesquisasTodas();
@@ -68,14 +67,32 @@ export default function PesquisasAndamento() {
                 default:
                     data = [];
             }
-
             setPesquisas(Array.isArray(data) ? data : []);
-
         } catch (error) {
             console.error(error);
             setErro(error.message || "Erro ao buscar pesquisas.");
         } finally {
             setLoading(false);
+        }
+    }
+
+    // --- NOVA FUNÇÃO DE DELETAR ---
+    async function handleDeletar(id) {
+        // Confirmação para evitar cliques acidentais
+        if (!window.confirm("Tem certeza que deseja deletar esta pesquisa? Essa ação não pode ser desfeita.")) {
+            return;
+        }
+
+        try {
+            await api.deletarPesquisa(id);
+
+            // Remove a pesquisa da lista visualmente sem precisar recarregar a página
+            setPesquisas((prevPesquisas) => prevPesquisas.filter(p => p.id !== id));
+
+            alert("Pesquisa deletada com sucesso!");
+        } catch (error) {
+            console.error("Erro ao deletar:", error);
+            alert("Erro ao tentar deletar a pesquisa.");
         }
     }
 
@@ -87,7 +104,9 @@ export default function PesquisasAndamento() {
             <span style={{ color: "#4f4" }}>Em andamento</span> :
             <span style={{ color: "#f55" }}>Encerrada</span>;
     };
+
     if (!logged) return null;
+
     return (
         <div style={outer}>
             <PerimeterBox style={{ width: "1000px", padding: 0 }}>
@@ -95,8 +114,8 @@ export default function PesquisasAndamento() {
                     <h2 style={title}>Consultar Pesquisas</h2>
 
                     <div style={filterArea}>
+                        {/* ... (código dos filtros mantido igual) ... */}
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-
                             <div style={filterGroup}>
                                 <label style={label}>Buscar por:</label>
                                 <select
@@ -162,6 +181,7 @@ export default function PesquisasAndamento() {
                                 <tr style={{ borderBottom: '1px solid #333', color: '#888' }}>
                                     <th style={th}>Nome</th>
                                     <th style={th}>Modelo</th>
+                                    <th style={{...th, textAlign: 'center'}}>Respondentes</th>
                                     <th style={th}>Início</th>
                                     <th style={th}>Fim</th>
                                     <th style={th}>Status</th>
@@ -173,16 +193,26 @@ export default function PesquisasAndamento() {
                                     <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
                                         <td style={td}><strong>{p.nome}</strong></td>
                                         <td style={td}>
-                                            {/* Lógica segura para exibir o nome do modelo */}
                                             {p.modeloNome || (p.modelo && p.modelo.nome ? p.modelo.nome : (p.modeloId ? "Mod. " + p.modeloId : "-"))}
+                                        </td>
+                                        <td style={{...td, textAlign: 'center'}}>
+                                                <span style={{
+                                                    background: '#333',
+                                                    padding: '4px 12px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '13px',
+                                                    fontWeight: 'bold',
+                                                    color: '#fff',
+                                                    border: '1px solid #444'
+                                                }}>
+                                                    {p.totalRespondentes || 0}
+                                                </span>
                                         </td>
                                         <td style={td}>{new Date(p.dataInicio).toLocaleDateString()}</td>
                                         <td style={td}>{new Date(p.dataFinal).toLocaleDateString()}</td>
                                         <td style={td}>{getStatus(p.dataFinal)}</td>
                                         <td style={td}>
                                             <div style={{ display: 'flex', gap: 8 }}>
-
-                                                {/* --- BOTÃO ATUALIZADO: VISUALIZAR --- */}
                                                 <button
                                                     onClick={() => navigate(`/pesquisas/visualizar/${p.id}`)}
                                                     style={{ ...actionBtn, background: "#0077cc" }}
@@ -196,6 +226,15 @@ export default function PesquisasAndamento() {
                                                     style={actionBtn}
                                                 >
                                                     📊 Resultados
+                                                </button>
+
+                                                {/* --- NOVO BOTÃO DE DELETAR --- */}
+                                                <button
+                                                    onClick={() => handleDeletar(p.id)}
+                                                    style={{ ...actionBtn, background: "#d32f2f", color: "white" }}
+                                                    title="Deletar pesquisa"
+                                                >
+                                                    🗑️
                                                 </button>
                                             </div>
                                         </td>
@@ -215,7 +254,6 @@ export default function PesquisasAndamento() {
     );
 }
 
-// Estilos
 const outer = { minHeight: "calc(100vh - 50px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif", padding: 20 };
 const blackCard = { background: "#0b0b0b", borderRadius: 18, padding: 24, color: "#fff", minHeight: 400 };
 const title = { textAlign: "center", margin: "0 0 20px 0", fontSize: 20 };
