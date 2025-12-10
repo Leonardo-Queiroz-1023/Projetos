@@ -13,7 +13,7 @@ export default function Modelos() {
   const logged = localStorage.getItem("logged") === "true";
   useEffect(() => {
         if (!logged) {
-            navigate("/login?msg=Faça%20login%20para%20acessar%20o%20menu", { replace: true });
+            navigate("/login?msg=Faça%20login%20para%20acessar%20os%20modelos", { replace: true });
         }
     }, [logged, navigate]);
 

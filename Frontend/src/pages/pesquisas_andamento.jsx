@@ -21,7 +21,7 @@ export default function PesquisasAndamento() {
 
     useEffect(() => {
         if (!logged) {
-            navigate("/login?msg=Faça%20login%20para%20acessar%20o%20menu", { replace: true });
+            navigate("/login?msg=Faça%20login%20para%20acessar%20os%20resultados", { replace: true });
         } else {
             carregarModelos();
             buscarPesquisas();

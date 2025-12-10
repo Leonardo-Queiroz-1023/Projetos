@@ -8,7 +8,7 @@ export default function Pesquisas() {
 
     useEffect(() => {
         if (!logged) {
-            navigate("/login?msg=Logue%20antes%20de%20acessar%20pesquisas", {
+            navigate("/login?msg=Faça%20login%20para%20acessar%20as%20pesquisas", {
                 replace: true,
             });
         }
