@@ -2,6 +2,19 @@
 
 Este projeto é uma aplicação full-stack com **Backend Spring Boot** e **Frontend React + Vite**.
 
+Pra rodar localmente,
+vá em src/services/api.js
+troque
+const API_URL = "https://projetos-1f39.onrender.com";
+por isso
+const API_URL = "http://localhost:8080";
+
+vá em projetos/service/pesquisaservices e troque
+String link = "https://projetos-1f39.onrender.com/responder/" + pesquisaId + "/" + respondente.getId();
+por isso
+String link = "http://localhost:5173/responder/" + pesquisaId + "/" + respondente.getId();
+
+NÃO COMMITE ESSAS MUDANÇAS
 ---
 
 ## 📋 Pré-requisitos
@@ -27,6 +40,7 @@ O backend usa:
 cd Backend
 
 # Compilar e instalar dependências
+# delete manualmente target e rode
 .\mvnw clean install -DskipTests
 # Executar a aplicação
 .\mvnw spring-boot:run
