@@ -1,114 +1,222 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 import api from "../services/api";
 
-export default function ParametrosPesquisa() {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [resultados, setResultados] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [erro, setErro] = useState(null);
+export default function ResultadosGerais() {
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    carregarResultados();
-  }, [id]);
+    // Estado para o Dropdown (Lista de pesquisas disponíveis)
+    const [listaPesquisas, setListaPesquisas] = useState([]);
+    const [pesquisaSelecionada, setPesquisaSelecionada] = useState(""); // ID da pesquisa escolhida
 
-  async function carregarResultados() {
-    try {
-      setLoading(true);
-      setErro(null);
-      const data = await api.getResultadosPesquisa(id);
-      // Estruture conforme seu backend: ajuste keys se necessário
-      setResultados(Array.isArray(data?.resultados) ? data.resultados : data || []);
-    } catch (e) {
-      setErro("Erro ao carregar resultados");
-      // Opcional: mock para não ficar vazio
-      // setResultados([{ nota: 5, quantidade: 10 }, { nota: 4, quantidade: 4 }]);
-    } finally {
-      setLoading(false);
+    // Estados dos Gráficos
+    const [resultados, setResultados] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [erro, setErro] = useState(null);
+
+    // 1. Ao abrir a tela, carrega a lista para o Dropdown
+    useEffect(() => {
+        carregarListaDePesquisas();
+    }, []);
+
+    // 2. Sempre que mudar a seleção do dropdown, busca os resultados
+    useEffect(() => {
+        if (pesquisaSelecionada) {
+            carregarResultados(pesquisaSelecionada);
+        } else {
+            setResultados([]); // Limpa se desmarcar
+        }
+    }, [pesquisaSelecionada]);
+
+    async function carregarListaDePesquisas() {
+        try {
+            const data = await api.getPesquisasTodas(); // Certifique-se que essa função existe no api.js
+            setListaPesquisas(data || []);
+        } catch (error) {
+            console.error("Erro ao listar pesquisas", error);
+            setErro("Não foi possível carregar a lista de pesquisas.");
+        }
     }
-  }
 
-  const totalAvaliacoes = resultados.reduce((acc, r) => acc + r.quantidade, 0);
-  const somaNotas = resultados.reduce((acc, r) => acc + r.nota * r.quantidade, 0);
-  const media = totalAvaliacoes > 0 ? (somaNotas / totalAvaliacoes).toFixed(1) : 0;
+    async function carregarResultados(id) {
+        try {
+            setLoading(true);
+            setErro(null);
 
-  function renderEstrelas(nota) {
-    const cheias = Math.floor(nota);
-    const vazias = 5 - cheias;
+            console.log(`--- CARREGANDO RESULTADOS ID: ${id} ---`);
+            const data = await api.getResultadosPesquisa(id);
+
+            // Proteção e conversão de dados (Mesma lógica robusta anterior)
+            const listaRespostas = Array.isArray(data) ? data : [];
+            const estatisticas = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+            listaRespostas.forEach((submissao) => {
+                if (!submissao || !submissao.respostas) return;
+
+                submissao.respostas.forEach(resposta => {
+                    if (!resposta || !resposta.texto) return;
+                    const valor = parseInt(resposta.texto, 10);
+                    if (!isNaN(valor) && valor >= 1 && valor <= 5) {
+                        estatisticas[valor]++;
+                    }
+                });
+            });
+
+            const dadosFormatados = [5, 4, 3, 2, 1].map(nota => ({
+                nota: nota,
+                quantidade: estatisticas[nota]
+            }));
+
+            setResultados(dadosFormatados);
+
+        } catch (e) {
+            console.error(e);
+            setErro("Erro ao processar resultados desta pesquisa.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // --- CÁLCULOS ---
+    const totalAvaliacoes = resultados.reduce((acc, r) => acc + r.quantidade, 0);
+    const somaNotas = resultados.reduce((acc, r) => acc + (r.nota * r.quantidade), 0);
+    const media = totalAvaliacoes > 0 ? (somaNotas / totalAvaliacoes).toFixed(1) : "0.0";
+
+    function renderEstrelas(valorNota) {
+        const cheias = Math.floor(valorNota);
+        const vazias = 5 - cheias;
+        return (
+            <span style={{ color: "#f5c518", fontSize: 24, letterSpacing: "2px" }}>
+                {"★".repeat(isNaN(cheias) ? 0 : cheias)}
+                <span style={{ color: "#444" }}>{"★".repeat(isNaN(vazias) ? 5 : vazias)}</span>
+            </span>
+        );
+    }
+
+    function getCorBarra(nota) {
+        const cores = { 5: "#4CAF50", 4: "#8BC34A", 3: "#FFC107", 2: "#FF9800", 1: "#f44336" };
+        return cores[nota] || "#ccc";
+    }
+
     return (
-      <span style={{ color: "#f5c518", fontSize: 18 }}>
-        {"★".repeat(cheias)}{"☆".repeat(vazias)}
-      </span>
-    );
-  }
+        <div style={outer}>
+            <PerimeterBox style={{ width: "700px", padding: 0, overflow: "hidden" }}>
+                <div style={blackCard}>
 
-  function getCorBarra(nota) {
-    const cores = { 5: "#4CAF50", 4: "#8BC34A", 3: "#FFC107", 2: "#FF9800", 1: "#f44336" };
-    return cores[nota] || "#ccc";
-  }
+                    {/* --- CABEÇALHO COM DROPDOWN --- */}
+                    <header style={{ marginBottom: 30, textAlign: 'center', borderBottom: '1px solid #333', paddingBottom: 20 }}>
+                        <h2 style={title}>📊 DASHBOARD DE RESULTADOS</h2>
+                        <p style={{ color: '#888', fontSize: 14, marginBottom: 15 }}>Selecione uma pesquisa para ver os gráficos</p>
 
-  return (
-    <div style={outer}>
-      <PerimeterBox style={{ width: "700px", padding: 0 }}>
-        <div style={blackCard}>
-          <h2 style={title}>RESULTADOS</h2>
+                        <select
+                            value={pesquisaSelecionada}
+                            onChange={(e) => setPesquisaSelecionada(e.target.value)}
+                            style={dropdownStyle}
+                        >
+                            <option value="">-- Selecione uma Pesquisa --</option>
+                            {listaPesquisas.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nome} ({new Date(p.dataInicio).toLocaleDateString()})
+                                </option>
+                            ))}
+                        </select>
+                    </header>
 
-          {loading && <p style={{ color: "#fff", textAlign: "center" }}>⏳ Carregando...</p>}
-          {erro && <p style={{ color: "#f66", textAlign: "center" }}>⚠️ {erro} (usando mock)</p>}
+                    {/* --- FEEDBACK DE ESTADO --- */}
+                    {loading && <p style={{ color: "#fff", textAlign: "center", padding: 20 }}>⏳ Analisando dados...</p>}
 
-          <div style={contentRow}>
-            <div style={mediaCard}>
-              <div style={mediaNumero}>{media}</div>
-              <div style={{ marginBottom: 8 }}>{renderEstrelas(parseFloat(media))}</div>
-              <div style={mediaTexto}>{totalAvaliacoes} avaliações</div>
-            </div>
+                    {erro && (
+                        <div style={{ background: '#3e1a1a', color: '#ff8888', padding: 15, borderRadius: 6, textAlign: 'center', margin: 20 }}>
+                            {erro}
+                        </div>
+                    )}
 
-            <div style={barrasContainer}>
-              {[5, 4, 3, 2, 1].map((estrela) => {
-                const item = resultados.find((r) => r.nota === estrela) || { quantidade: 0 };
-                const porcentagem = totalAvaliacoes > 0 ? (item.quantidade / totalAvaliacoes) * 100 : 0;
+                    {!pesquisaSelecionada && !loading && (
+                        <div style={{ textAlign: 'center', color: '#555', padding: 40 }}>
+                            👆 Escolha uma pesquisa acima para começar.
+                        </div>
+                    )}
 
-                return (
-                  <div key={estrela} style={barraRow} onClick={() => navigate(`/resultados-detalhe/${id}/${estrela}`)}>
-                    <span style={barraLabel}>{estrela} estrela{estrela > 1 ? "s" : ""}</span>
-                    <div style={barraTrack}>
-                      <div style={{ ...barraFill, width: `${porcentagem}%`, background: getCorBarra(estrela) }} />
-                    </div>
-                    <span style={barraPorcentagem}>{Math.round(porcentagem)}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                    {/* --- CONTEÚDO DOS GRÁFICOS (SÓ APARECE SE TIVER SELEÇÃO) --- */}
+                    {pesquisaSelecionada && !loading && !erro && (
+                        <div style={contentRow}>
+                            {/* MÉDIA */}
+                            <div style={mediaCard}>
+                                <div style={mediaNumero}>{media}</div>
+                                <div style={{ marginBottom: 8 }}>{renderEstrelas(parseFloat(media))}</div>
+                                <div style={mediaTexto}>{totalAvaliacoes} respostas</div>
+                            </div>
 
-          <button style={backBtn} onClick={() => navigate(-1)}>Voltar</button>
+                            {/* BARRAS */}
+                            <div style={barrasContainer}>
+                                {resultados.map((item) => {
+                                    const porcentagem = totalAvaliacoes > 0
+                                        ? (item.quantidade / totalAvaliacoes) * 100
+                                        : 0;
+
+                                    return (
+                                        <div
+                                            key={item.nota}
+                                            style={barraRow}
+                                            // Se quiser detalhar quem votou, mantém o navigate:
+                                            onClick={() => navigate(`/resultados-detalhe/${pesquisaSelecionada}/${item.nota}`)}
+                                        >
+                                            <span style={barraLabel}>{item.nota} ★</span>
+
+                                            <div style={barraTrack}>
+                                                <div style={{
+                                                    ...barraFill,
+                                                    width: `${porcentagem}%`,
+                                                    background: getCorBarra(item.nota)
+                                                }} />
+                                            </div>
+
+                                            <div style={statsRight}>
+                                                <span style={{ color: '#fff', fontWeight: 'bold' }}>{Math.round(porcentagem)}%</span>
+                                                <span style={{ fontSize: 11, color: '#666' }}>({item.quantidade})</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    <button style={backBtn} onClick={() => navigate("/menu-central")}>⬅ Voltar ao Menu</button>
+                </div>
+            </PerimeterBox>
         </div>
-      </PerimeterBox>
-    </div>
-  );
+    );
 }
 
-const outer = {
-  minHeight: "calc(100vh - 50px)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "sans-serif",
-  padding: 20,
+// --- ESTILOS ---
+const outer = { minHeight: "calc(100vh - 50px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Segoe UI', sans-serif", padding: 20, background: "#f4f4f4" };
+const blackCard = { background: "#1a1a1a", borderRadius: 10, padding: 30, color: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,0.3)" };
+const title = { margin: 0, fontSize: 24, fontWeight: 700 };
+
+// Estilo novo para o Select ficar bonito no fundo escuro
+const dropdownStyle = {
+    padding: "10px 15px",
+    borderRadius: "6px",
+    border: "1px solid #444",
+    background: "#252525",
+    color: "#fff",
+    fontSize: "1rem",
+    width: "100%",
+    maxWidth: "400px",
+    cursor: "pointer",
+    outline: "none"
 };
 
-const blackCard = { background: "#0b0b0b", borderRadius: 18, padding: 24, color: "#fff" };
-const title = { textAlign: "center", margin: "0 0 20px 0", fontSize: 20, fontWeight: 700 };
-const contentRow = { display: "flex", gap: 30, justifyContent: "center", flexWrap: "wrap" };
-const mediaCard = { textAlign: "center", minWidth: 120 };
-const mediaNumero = { fontSize: 48, fontWeight: 700, color: "#fff" };
-const mediaTexto = { fontSize: 13, color: "#aaa" };
-const barrasContainer = { flex: 1, minWidth: 280, maxWidth: 400 };
-const barraRow = { display: "flex", alignItems: "center", gap: 10, marginBottom: 10, cursor: "pointer", padding: "4px 8px", borderRadius: 6 };
-const barraLabel = { width: 80, fontSize: 13, color: "#ccc" };
-const barraTrack = { flex: 1, height: 14, background: "#333", borderRadius: 7, overflow: "hidden" };
-const barraFill = { height: "100%", borderRadius: 7, transition: "width 0.4s ease" };
-const barraPorcentagem = { width: 40, fontSize: 12, color: "#aaa", textAlign: "right" };
-const backBtn = { marginTop: 20, padding: "8px 20px", background: "#f4b7ac", color: "#1a1a1a", border: "none", borderRadius: 6, cursor: "pointer", display: "block", margin: "20px auto 0" };
+const contentRow = { display: "flex", gap: 40, justifyContent: "center", flexWrap: "wrap", alignItems: 'center', marginTop: 20 };
+const mediaCard = { textAlign: "center", minWidth: 140, padding: 20, background: '#252525', borderRadius: 12 };
+const mediaNumero = { fontSize: 64, fontWeight: 800, color: "#fff", lineHeight: 1 };
+const mediaTexto = { fontSize: 13, color: "#aaa", marginTop: 5 };
+const barrasContainer = { flex: 1, minWidth: 300, maxWidth: 450 };
+const barraRow = { display: "flex", alignItems: "center", gap: 12, marginBottom: 12, cursor: "pointer", padding: "6px 8px", borderRadius: 6, transition: 'background 0.2s' };
+const barraLabel = { width: 30, fontSize: 14, color: "#eee", fontWeight: 'bold' };
+const barraTrack = { flex: 1, height: 10, background: "#333", borderRadius: 10, overflow: "hidden" };
+const barraFill = { height: "100%", borderRadius: 10, transition: "width 0.8s ease" };
+const statsRight = { width: 60, textAlign: "right", display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1 };
+const backBtn = { marginTop: 30, padding: "10px 25px", background: "transparent", color: "#888", border: "1px solid #444", borderRadius: 6, cursor: "pointer", display: "block", margin: "30px auto 0", fontWeight: 600 };

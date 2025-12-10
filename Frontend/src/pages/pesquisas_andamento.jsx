@@ -187,7 +187,7 @@ export default function PesquisasAndamento() {
                                                 </button>
 
                                                 <button
-                                                    onClick={() => navigate(`/resultados/${p.id}`)}
+                                                    onClick={() => navigate(`/resultados/`)}
                                                     style={actionBtn}
                                                 >
                                                     📊 Resultados

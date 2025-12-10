@@ -72,7 +72,7 @@ export default function App() {
                 <Route path="/pesquisas/criar" element={<CriarPesquisa />} />
                 <Route path="/selecionar-pesquisa" element={<SelecionarPesquisa />} />
                 <Route path="/pesquisas-em-andamento" element={<PesquisasAndamento />} />
-                <Route path="/resultados/:id" element={<ParametrosPesquisa />} />
+                <Route path="/resultados" element={<ParametrosPesquisa />} />
                 <Route path="/pesquisas/visualizar/:id" element={<VisualizarPesquisa />} />
 
                 {/* --- NOVAS ROTAS ADICIONADAS --- */}

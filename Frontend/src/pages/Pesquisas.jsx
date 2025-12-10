@@ -57,9 +57,9 @@ export default function Pesquisas() {
 
                     <button
                         style={btn}
-                        onClick={() => alert("Funcionalidade futura: Ver apps")}
+                        onClick={() => navigate("/resultados")}
                     >
-                        Resultados app
+                        📊 Ver Resultados
                     </button>
 
                     <button style={{ ...btn, background: "#444" }} onClick={() => navigate("/menu-central")}>

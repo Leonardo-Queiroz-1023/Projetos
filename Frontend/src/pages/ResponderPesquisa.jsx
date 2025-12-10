@@ -154,7 +154,7 @@ export default function ResponderPesquisa() {
                     </div>
 
                     <h2 style={{ fontSize: "1.5rem", marginBottom: "30px", color: "#222" }}>
-                        {pergunta.texto || "Pergunta sem texto"}
+                        {pergunta.questao ||pergunta.texto || "Pergunta sem texto"}
                     </h2>
 
                     {/* Renderização das opções (Escala 1-5) */}
