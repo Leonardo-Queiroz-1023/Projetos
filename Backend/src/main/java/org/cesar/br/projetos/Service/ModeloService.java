@@ -70,6 +70,17 @@ public class ModeloService {
     }
 
     // ---------------------------------------------------------------------
+    // READ - Lógica de negócio: buscar modelo por ID (sem validar)
+    // ---------------------------------------------------------------------
+    public Modelo buscarModeloPeloIdSemValidacao(Long id) {
+        if (id == null) {
+            return null;
+        }
+        // Busca direta pelo ID, sem filtro de usuário
+        return modeloRepository.findById(id).orElse(null);
+    }
+
+    // ---------------------------------------------------------------------
     // UPDATE - Lógica de negócio: atualizar modelo (apenas do usuário)
     // ---------------------------------------------------------------------
     public boolean atualizarModelo(Long id,

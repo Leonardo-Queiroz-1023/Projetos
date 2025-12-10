@@ -68,7 +68,19 @@ public class ControllerModelo {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Long id, @RequestParam Long usuarioId) {
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id, @RequestParam(required = false) Long usuarioId) {
+
+        // --- BYPASS: SE FOR USUÁRIO 0 (RESPONDENTE) ---
+        if (usuarioId == null || usuarioId == 0L) {
+            Modelo m = modeloService.buscarModeloPeloIdSemValidacao(id);
+
+            if (m != null) {
+                return ResponseEntity.ok(m);
+            } else {
+                return ResponseEntity.status(404).body(Map.of("error", "Modelo público não encontrado!"));
+            }
+        }
+        // --- FLUXO NORMAL: SE FOR ADMIN/DONO ---
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
 
         if (usuario == null) {

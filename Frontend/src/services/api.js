@@ -81,10 +81,7 @@ const api = {
     getModeloById: (id, ownerId = null) => {
         let usuarioId = ownerId || localStorage.getItem('usuarioId');
 
-        // Se for nulo (acesso público), precisamos passar algo ou o Java vai reclamar "Required request parameter 'usuarioId' is not present"
-        // Se você não mudou o Java, isso aqui pode falhar para usuários externos.
-        // Tente passar "1" (admin) se for urgente, ou ajuste o Java.
-        if (!usuarioId) usuarioId = "";
+        if (!usuarioId) usuarioId = "0";
 
         return fetchAPI(`/modelos/${id}?usuarioId=${usuarioId}`);
     },
