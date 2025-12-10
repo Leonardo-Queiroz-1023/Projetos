@@ -106,20 +106,6 @@ export default function CriarModelos() {
                         />
                     </label>
 
-                    <label style={styles.label}>
-                        Plataforma de envio
-                        <select
-                            value={plataforma}
-                            onChange={(e) => setPlataforma(e.target.value)}
-                            style={styles.select}
-                            required
-                        >
-                            <option value="">Selecione…</option>
-                            <option value="WHATSAPP">WhatsApp</option>
-                            <option value="EMAIL">Email</option>
-                        </select>
-                    </label>
-
                     {/* ---- LISTA DE PERGUNTAS ADICIONADAS ---- */}
                     <div style={{ marginTop: 10 }}>
                         <p style={{ marginBottom: 6 }}>Perguntas adicionadas:</p>

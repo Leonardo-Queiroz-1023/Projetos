@@ -9,6 +9,7 @@ import ListarModelos from "./pages/ListarModelos.jsx";
 import CriarModelos from "./pages/CriarModelos.jsx";
 import EditarModelo from "./pages/EditarModelo.jsx";
 import Pesquisas from "./pages/Pesquisas.jsx";
+import CriarPesquisa from "./pages/CriarPesquisa.jsx";
 import SelecionarPesquisa from "./pages/secionar_pesquisar.jsx";
 import PesquisasAndamento from "./pages/pesquisas_andamento.jsx";
 import ParametrosPesquisa from "./pages/parametros_pesquisa.jsx";
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="/modelos/editar/:id" element={<EditarModelo />} />
 
         <Route path="/pesquisas" element={<Pesquisas />} />
+        <Route path="/pesquisas/criar" element={<CriarPesquisa />} />
         <Route path="/selecionar-pesquisa" element={<SelecionarPesquisa />} />
         <Route path="/pesquisas-em-andamento" element={<PesquisasAndamento />} />
 

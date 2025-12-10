@@ -1,171 +1,137 @@
-import React, { useState } from "react";
+import React, {useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import PerimeterBox from "../components/PerimeterBox";
 
 export default function MenuCentral() {
-  const navigate = useNavigate();
-  const username = localStorage.getItem("username") || "Usuário";
-  const [showPesquisasMenu, setShowPesquisasMenu] = useState(false);
+    const navigate = useNavigate();
+    const nomeExibicao = localStorage.getItem("nome_usuario") || "Usuário";
 
-  function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("logged");
-    navigate("/login", { replace: true });
-  }
+    const logged = localStorage.getItem("logged") === "true";
 
-  return (
-    <div style={outer}>
-      <PerimeterBox style={{ padding: 0, background: "transparent", boxShadow: "none" }}>
-        <div style={blackCard}>
-          <header style={header}>
-            <h2 style={{ margin: 0 }}>SMART SURVEYS</h2>
-            <div style={{ color: "#ddd", fontSize: 13 }}>Bem-vinda(o), {username}</div>
-          </header>
+    useEffect(() => {
+        if (!logged) {
+            navigate("/login?msg=Faça%20login%20para%20acessar%20o%20menu", { replace: true });
+        }
+    }, [logged, navigate]);
+    function logout() {
+        localStorage.removeItem("nome_usuario");
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("logged");
+        localStorage.removeItem("usuarioId");
+        navigate("/login", { replace: true });
+    }
+    if (!logged) return null;
+    return (
+        <div style={outer}>
+            <PerimeterBox style={{ padding: 0, background: "transparent", boxShadow: "none" }}>
+                <div style={blackCard}>
+                    <header style={header}>
+                        <h2 style={{ margin: 0, fontSize: "28px" }}>SMART SURVEYS</h2>
+                        <div style={{ color: "#ddd", fontSize: 16 }}>Bem-vinda(o), {nomeExibicao}</div>
+                    </header>
 
-          <main style={grid}>
-            {/* Resumo */}
-            <div style={summaryCard} onClick={() => navigate("/menu-central")}>
-              <div style={summaryText}>RESUMO GERAL</div>
-            </div>
+                    <main style={gridContainer}>
+                        <button style={bigCardButton} onClick={() => navigate("/modelos")}>
+                            <span style={{ fontSize: "40px", display: "block", marginBottom: 10 }}>📂</span>
+                            Gerenciar Modelos
+                        </button>
 
-            {/* Coluna de atalhos */}
-            <div style={rightColumn}>
-              {/* Auth */}
-              <button style={smallCard} onClick={() => navigate("/login")}>Login</button>
-              <button style={smallCard} onClick={() => navigate("/register")}>Cadastro</button>
+                        <button style={bigCardButton} onClick={() => navigate("/pesquisas")}>
+                            <span style={{ fontSize: "40px", display: "block", marginBottom: 10 }}>📋</span>
+                            Minhas Pesquisas
+                        </button>
 
-              {/* Modelos */}
-              <button style={smallCard} onClick={() => navigate("/modelos")}>Listar Modelos</button>
-              <button style={smallCard} onClick={() => navigate("/modelos/criar")}>Criar Modelo</button>
-              {/* Exemplo de edição (troque o :id no navegador) */}
-              <button style={smallCard} onClick={() => navigate("/modelos/editar/1")}>Editar Modelo (ID 1)</button>
+                        <button style={wideCardButton} onClick={() => navigate("/resultados")}>
+                            <span style={{ marginRight: 15, fontSize: "24px" }}>📊</span>
+                            Ver Resultados e Relatórios
+                        </button>
 
-              {/* Pesquisas */}
-              <button style={smallCard} onClick={() => navigate("/pesquisas")}>Pesquisas</button>
-              <button style={smallCard} onClick={() => navigate("/selecionar-pesquisa")}>Selecionar Pesquisa</button>
-              <button style={smallCard} onClick={() => navigate("/pesquisas-em-andamento")}>Em Andamento</button>
-
-              {/* Resultados */}
-              <button style={smallCard} onClick={() => navigate("/resultados/1")}>Resultados (Pesquisa 1)</button>
-
-              {/* Removidos até os arquivos existirem */}
-              {/* <button style={smallCard} onClick={() => navigate("/disparar-pesquisa/1")}>Disparar Pesquisa (Modelo 1)</button>
-              <button style={smallCard} onClick={() => navigate("/responder-pesquisa/1")}>Responder Pesquisa (ID 1)</button>
-              <button style={smallCard} onClick={() => navigate("/resultados-detalhe/1/5")}>Resultado Detalhe</button> */}
-            </div>
-
-            {/* Destaque de Andamento */}
-            <div style={ongoingCard} onClick={() => navigate("/pesquisas-em-andamento")}>
-              <div style={{ fontSize: 16 }}>Pesquisas em andamento</div>
-            </div>
-
-            {/* Sair */}
-            <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: 12 }}>
-              <button style={logoutBtn} onClick={logout}>Sair</button>
-            </div>
-          </main>
+                        <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginTop: 20 }}>
+                            <button style={logoutBtn} onClick={logout}>Sair</button>
+                        </div>
+                    </main>
+                </div>
+            </PerimeterBox>
         </div>
-      </PerimeterBox>
-    </div>
-  );
+    );
 }
 
 const outer = {
-  minHeight: "calc(100vh - 50px)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "sans-serif",
-  padding: 20,
+    minHeight: "calc(100vh - 50px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "sans-serif",
+    padding: 20,
 };
 
 const blackCard = {
-  width: 720,
-  maxWidth: "94vw",
-  background: "#0b0b0b",
-  borderRadius: 24,
-  padding: 20,
-  color: "#fff",
-  boxSizing: "border-box",
-  border: "6px solid #000",
+    width: 720,
+    maxWidth: "94vw",
+    background: "#0b0b0b",
+    borderRadius: 24,
+    padding: 40,
+    color: "#fff",
+    boxSizing: "border-box",
+    border: "6px solid #000",
 };
 
 const header = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 14,
-  padding: "0 8px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 40,
+    borderBottom: "1px solid #333",
+    paddingBottom: 20,
 };
 
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 260px",
-  gridTemplateRows: "1fr auto",
-  gridTemplateAreas: `"summary tiles" "ongoing ongoing"`,
-  gap: 16,
-  alignItems: "stretch",
+const gridContainer = {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 20,
 };
 
-const summaryCard = {
-  gridArea: "summary",
-  background: "#e9e9e9",
-  color: "#111",
-  borderRadius: 12,
-  padding: 18,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "pointer",
-  minHeight: 160,
+const bigCardButton = {
+    background: "#e9e9e9",
+    color: "#111",
+    borderRadius: 16,
+    padding: "30px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: 18,
+    fontWeight: "bold",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "200px",
+    transition: "transform 0.2s",
 };
 
-const summaryText = {
-  fontSize: 18,
-  fontWeight: 600,
-  textAlign: "center",
-};
-
-const rightColumn = {
-  gridArea: "tiles",
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-  alignItems: "stretch",
-};
-
-const smallCard = {
-  background: "#e9e9e9",
-  color: "#111",
-  borderRadius: 12,
-  padding: "14px 12px",
-  border: "none",
-  cursor: "pointer",
-  textAlign: "center",
-  fontSize: 14,
-};
-
-const ongoingCard = {
-  gridArea: "ongoing",
-  background: "#e9e9e9",
-  color: "#111",
-  borderRadius: 12,
-  padding: 18,
-  minHeight: 120,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "pointer",
-  marginTop: 4,
+const wideCardButton = {
+    gridColumn: "1 / -1",
+    background: "#e9e9e9",
+    color: "#111",
+    borderRadius: 16,
+    padding: "20px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: 18,
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "80px",
 };
 
 const logoutBtn = {
-  background: "#86c6ff",
-  color: "#023047",
-  border: "none",
-  padding: "8px 28px",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontWeight: 600,
+    background: "#86c6ff",
+    color: "#023047",
+    border: "none",
+    padding: "12px 40px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 16,
 };

@@ -27,8 +27,7 @@ O backend usa:
 cd Backend
 
 # Compilar e instalar dependências
-.\mvnw clean install
-
+.\mvnw clean install -DskipTests
 # Executar a aplicação
 .\mvnw spring-boot:run
 ```

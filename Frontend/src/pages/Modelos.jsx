@@ -10,6 +10,13 @@ export default function Modelos() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
 
+  const logged = localStorage.getItem("logged") === "true";
+  useEffect(() => {
+        if (!logged) {
+            navigate("/login?msg=Faça%20login%20para%20acessar%20o%20menu", { replace: true });
+        }
+    }, [logged, navigate]);
+
   useEffect(() => {
     carregarModelos();
   }, []);

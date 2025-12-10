@@ -23,6 +23,11 @@ public class ControllerPesquisa {
     public ControllerPesquisa(PesquisaService pesquisaService) {
         this.pesquisaService = pesquisaService;
     }
+    @GetMapping("/listar/todas")
+    public ResponseEntity<?> listarTodas() {
+
+        return ResponseEntity.ok(pesquisaService.listarTodas());
+    }
 
     @PostMapping("/criar")
     public ResponseEntity<?> criar(@RequestBody Map<String, Object> body) {

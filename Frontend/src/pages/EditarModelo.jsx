@@ -9,7 +9,6 @@ export default function EditarModelo() {
 
     const [nome, setNome] = useState("");
     const [descricao, setDescricao] = useState("");
-    const [plataforma, setPlataforma] = useState("");
     const [perguntas, setPerguntas] = useState([]); // {id?, texto, isNew?, isDeleted?}
     const [novaPergunta, setNovaPergunta] = useState("");
     const [message, setMessage] = useState("");
@@ -21,7 +20,6 @@ export default function EditarModelo() {
             const modelo = await api.getModeloById(id);
             setNome(modelo.nome || "");
             setDescricao(modelo.descricao || "");
-            setPlataforma(modelo.plataformasDisponiveis || "");
             // Carrega as perguntas do backend
             const list = (modelo.perguntas || []).map((p) => {
                 return { 
@@ -81,7 +79,6 @@ export default function EditarModelo() {
             const payload = {
                 nome,
                 descricao,
-                plataformasDisponiveis: plataforma,
             };
             console.log("🔄 Atualizando modelo:", id, payload);
             const updateResult = await api.updateModelo(id, payload);
@@ -145,14 +142,6 @@ export default function EditarModelo() {
                         <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} style={styles.textarea} />
                     </label>
 
-                    <label style={styles.label}>
-                        Plataforma
-                        <select value={plataforma} onChange={(e) => setPlataforma(e.target.value)} style={styles.select}>
-                            <option value="">Selecione…</option>
-                            <option value="WHATSAPP">WhatsApp</option>
-                            <option value="EMAIL">Email</option>
-                        </select>
-                    </label>
 
                     <div>
                         <p style={{ marginBottom: 8 }}>Perguntas</p>

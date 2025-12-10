@@ -13,6 +13,12 @@ export default function ListarModelos() {
     const [editandoPergunta, setEditandoPergunta] = useState(null);
     const [textoEditado, setTextoEditado] = useState("");
     const navigate = useNavigate();
+    const logged = localStorage.getItem("logged") === "true";
+    useEffect(() => {
+        if (!logged) {
+            navigate("/login?msg=Faça%20login%20para%20acessar%20o%20menu", { replace: true });
+        }
+    }, [logged, navigate]);
 
     const carregar = async () => {
         setLoading(true);
@@ -48,18 +54,31 @@ export default function ListarModelos() {
 
     const expandirModelo = async (modeloId) => {
         if (modeloExpandido === modeloId) {
+            // Se clicar no mesmo, fecha
             setModeloExpandido(null);
             setPerguntas([]);
         } else {
+            // Se clicar em outro, abre
             try {
-                const resp = await fetch(`/perguntas/listar/${modeloId}`);
-                const data = await resp.json();
-                setPerguntas(data || []);
+                // Limpa estado anterior para evitar "piscar" dados velhos
+                setPerguntas([]);
                 setModeloExpandido(modeloId);
                 setMessage("");
+
+                const resp = await fetch(`/perguntas/listar/${modeloId}`);
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    // IMPORTANTE: Garante que seja array. Se for null, vira []
+                    setPerguntas(Array.isArray(data) ? data : []);
+                } else {
+                    // Se deu 404 ou erro, assume vazio para não travar a tela
+                    setPerguntas([]);
+                }
             } catch (error) {
                 console.error("Erro ao carregar perguntas", error);
-                setMessage("Erro ao carregar perguntas.");
+                setPerguntas([]); // Garante que a UI não quebre
+                setMessage("Erro ao conectar para buscar perguntas.");
             }
         }
     };
@@ -69,18 +88,48 @@ export default function ListarModelos() {
             setMessage("Digite uma pergunta válida.");
             return;
         }
+
+        const tempId = Date.now();
+        const perguntaTemp = { id: tempId, questao: novaPergunta };
+
+        setPerguntas(prev => [...prev, perguntaTemp]);
+
+        setModelos(prev => prev.map(m => {
+            if (m.id === modeloId) {
+                const listaAtualizada = [...(m.perguntas || []), perguntaTemp];
+                return { ...m, perguntas: listaAtualizada };
+            }
+            return m;
+        }));
+
+        const textoParaEnviar = novaPergunta;
+        setNovaPergunta("");
+
         try {
             await fetch(`/perguntas/adicionar/${modeloId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ questao: novaPergunta })
+                body: JSON.stringify({ questao: textoParaEnviar })
             });
-            setNovaPergunta("");
-            expandirModelo(modeloId); // recarrega perguntas
+
+            const resp = await fetch(`/perguntas/listar/${modeloId}`);
+            const data = await resp.json();
+            const listaReal = Array.isArray(data) ? data : [];
+
+            setPerguntas(listaReal);
+
+            setModelos(prev => prev.map(m => {
+                if (m.id === modeloId) {
+                    return { ...m, perguntas: listaReal };
+                }
+                return m;
+            }));
+
             setMessage("Pergunta adicionada!");
         } catch (error) {
             console.error("Erro ao adicionar pergunta", error);
             setMessage("Erro ao adicionar pergunta.");
+            expandirModelo(modeloId);
         }
     };
 
@@ -102,7 +151,12 @@ export default function ListarModelos() {
             });
             setEditandoPergunta(null);
             setTextoEditado("");
-            expandirModelo(modeloId); // recarrega perguntas
+
+            // Atualiza localmente para ser rápido
+            setPerguntas(prev => prev.map(p =>
+                p.id === perguntaId ? { ...p, questao: textoEditado } : p
+            ));
+
             setMessage("Pergunta atualizada!");
         } catch (error) {
             console.error("Erro ao atualizar pergunta", error);
@@ -117,15 +171,33 @@ export default function ListarModelos() {
 
     const deletarPergunta = async (modeloId, perguntaId) => {
         if (!window.confirm("Confirma remoção desta pergunta?")) return;
+
+        const perguntasAnteriores = [...perguntas];
+
+        setPerguntas(prev => prev.filter(p => p.id !== perguntaId));
+
+        setModelos(prev => prev.map(m => {
+            if (m.id === modeloId) {
+                const novasPerguntas = m.perguntas ? m.perguntas.filter(p => p.id !== perguntaId) : [];
+                return { ...m, perguntas: novasPerguntas };
+            }
+            return m;
+        }));
+
         try {
-            await fetch(`/perguntas/remover/${modeloId}/${perguntaId}`, {
+            const response = await fetch(`/perguntas/remover/${modeloId}/${perguntaId}`, {
                 method: 'DELETE'
             });
-            expandirModelo(modeloId); // recarrega perguntas
+
+            if (!response.ok) throw new Error("Erro no servidor");
+
             setMessage("Pergunta removida!");
+
         } catch (error) {
             console.error("Erro ao deletar pergunta", error);
-            setMessage("Erro ao deletar pergunta.");
+            setPerguntas(perguntasAnteriores);
+            carregar();
+            setMessage("Erro ao deletar pergunta. A alteração foi desfeita.");
         }
     };
 
@@ -140,7 +212,7 @@ export default function ListarModelos() {
                     </div>
                 </div>
 
-                {message && <p style={{ color: "#f55" }}>{message}</p>}
+                {message && <p style={{ color: "#f55", marginBottom: 10 }}>{message}</p>}
 
                 {loading ? (
                     <p>Carregando...</p>
@@ -153,47 +225,45 @@ export default function ListarModelos() {
                             <th style={styles.th}>ID</th>
                             <th style={styles.th}>Nome</th>
                             <th style={styles.th}>Descrição</th>
-                            <th style={styles.th}>Plataforma</th>
                             <th style={styles.th}># Perguntas</th>
                             <th style={styles.th}>Ações</th>
                         </tr>
                         </thead>
                         <tbody>
                         {modelos.map((m) => (
-                            <>
-                                <tr key={m.id} style={styles.tr}>
+                            <React.Fragment key={m.id}>
+                                <tr style={styles.tr}>
                                     <td style={styles.td}>{String(m.id).slice(0, 8)}</td>
                                     <td style={styles.td}>{m.nome}</td>
                                     <td style={styles.td}>{m.descricao}</td>
-                                    <td style={styles.td}>{m.plataformasDisponiveis}</td>
                                     <td style={styles.td}>{m.perguntas ? m.perguntas.length : 0}</td>
                                     <td style={styles.td}>
                                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                             <button style={styles.smallBtn} onClick={() => expandirModelo(m.id)}>
-                                                {modeloExpandido === m.id ? "▼" : "►"} Perguntas
+                                                {modeloExpandido === m.id ? "▼ Fechar" : "► Perguntas"}
                                             </button>
                                             <button style={styles.smallBtn} onClick={() => navigate(`/modelos/editar/${m.id}`)}>✏️ Editar</button>
                                             <button style={styles.removeBtn} onClick={() => handleDeletar(m.id)}>🗑️ Deletar</button>
                                         </div>
                                     </td>
                                 </tr>
-                                
+
                                 {modeloExpandido === m.id && (
-                                    <tr key={`perguntas-${m.id}`}>
+                                    <tr>
                                         <td colSpan="6" style={{ padding: 20, background: "#0a0a0a", borderLeft: "4px solid #0077cc" }}>
                                             <div>
                                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                                                     <h3 style={{ margin: 0, color: "#0077cc" }}>📝 Perguntas - {m.nome}</h3>
-                                                    <button 
+                                                    <button
                                                         style={{ ...styles.smallBtn, background: "#28a745" }}
                                                         onClick={() => navigate(`/modelos/editar/${m.id}`)}
                                                     >
                                                         ✏️ Editar Modelo Completo
                                                     </button>
                                                 </div>
-                                                
+
                                                 <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
-                                                    <input 
+                                                    <input
                                                         type="text"
                                                         placeholder="Digite uma nova pergunta..."
                                                         value={novaPergunta}
@@ -203,38 +273,49 @@ export default function ListarModelos() {
                                                             if (e.key === 'Enter') adicionarPergunta(m.id);
                                                         }}
                                                     />
-                                                    <button 
-                                                        style={{ ...styles.buttonPrimary, background: "#28a745" }} 
+                                                    <button
+                                                        style={{ ...styles.buttonPrimary, background: "#28a745" }}
                                                         onClick={() => adicionarPergunta(m.id)}
                                                     >
                                                         ➕ Adicionar
                                                     </button>
                                                 </div>
 
-                                                {perguntas.length === 0 ? (
-                                                    <div style={{ padding: 20, textAlign: "center", color: "#888", background: "#111", borderRadius: 8 }}>
-                                                        <p style={{ margin: 0 }}>📭 Nenhuma pergunta cadastrada ainda</p>
-                                                        <p style={{ margin: "8px 0 0 0", fontSize: 13 }}>Adicione a primeira pergunta acima</p>
+                                                {(!perguntas || perguntas.length === 0) ? (
+                                                    // BLUCO DE "NENHUMA PERGUNTA"
+                                                    <div style={{
+                                                        padding: "30px",
+                                                        textAlign: "center",
+                                                        color: "#aaa",
+                                                        background: "#151515",
+                                                        borderRadius: 8,
+                                                        border: "1px dashed #444",
+                                                        marginTop: 10
+                                                    }}>
+                                                        <h4 style={{ marginTop: 0, color: "#fff" }}>📭 Nenhuma pergunta encontrada</h4>
+                                                        <p style={{ fontSize: 14, margin: "5px 0" }}>Este modelo ainda não tem perguntas cadastradas.</p>
+                                                        <p style={{ fontSize: 13, color: "#666", margin: 0 }}>Use o campo acima para criar a primeira.</p>
                                                     </div>
                                                 ) : (
+                                                    // LISTA DE PERGUNTAS
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                                                         {perguntas.map((p, index) => (
-                                                            <div 
-                                                                key={p.id} 
-                                                                style={{ 
-                                                                    padding: 12, 
-                                                                    background: "#151515", 
-                                                                    borderRadius: 8, 
+                                                            <div
+                                                                key={p.id}
+                                                                style={{
+                                                                    padding: 12,
+                                                                    background: "#151515",
+                                                                    borderRadius: 8,
                                                                     border: "1px solid #333",
                                                                     display: "flex",
                                                                     gap: 12,
                                                                     alignItems: "flex-start"
                                                                 }}
                                                             >
-                                                                <div style={{ 
-                                                                    minWidth: 30, 
-                                                                    height: 30, 
-                                                                    background: "#0077cc", 
+                                                                <div style={{
+                                                                    minWidth: 30,
+                                                                    height: 30,
+                                                                    background: "#0077cc",
                                                                     borderRadius: "50%",
                                                                     display: "flex",
                                                                     alignItems: "center",
@@ -245,15 +326,15 @@ export default function ListarModelos() {
                                                                 }}>
                                                                     {index + 1}
                                                                 </div>
-                                                                
+
                                                                 {editandoPergunta === p.id ? (
                                                                     <div style={{ display: "flex", gap: 8, flex: 1, alignItems: "center" }}>
-                                                                        <textarea 
+                                                                        <textarea
                                                                             value={textoEditado}
                                                                             onChange={(e) => setTextoEditado(e.target.value)}
-                                                                            style={{ 
-                                                                                ...styles.input, 
-                                                                                flex: 1, 
+                                                                            style={{
+                                                                                ...styles.input,
+                                                                                flex: 1,
                                                                                 minHeight: 60,
                                                                                 resize: "vertical",
                                                                                 fontFamily: "inherit"
@@ -261,14 +342,14 @@ export default function ListarModelos() {
                                                                             autoFocus
                                                                         />
                                                                         <div style={{ display: "flex", gap: 6, flexDirection: "column" }}>
-                                                                            <button 
-                                                                                style={{ ...styles.smallBtn, background: "#28a745", whiteSpace: "nowrap" }} 
+                                                                            <button
+                                                                                style={{ ...styles.smallBtn, background: "#28a745", whiteSpace: "nowrap" }}
                                                                                 onClick={() => salvarEdicaoPergunta(m.id, p.id)}
                                                                             >
                                                                                 ✓ Salvar
                                                                             </button>
-                                                                            <button 
-                                                                                style={{ ...styles.buttonSecondary, padding: "6px 10px", whiteSpace: "nowrap" }} 
+                                                                            <button
+                                                                                style={{ ...styles.buttonSecondary, padding: "6px 10px", whiteSpace: "nowrap" }}
                                                                                 onClick={cancelarEdicao}
                                                                             >
                                                                                 ✕ Cancelar
@@ -283,15 +364,15 @@ export default function ListarModelos() {
                                                                             </p>
                                                                         </div>
                                                                         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                                                                            <button 
-                                                                                style={{ ...styles.smallBtn, padding: "6px 12px" }} 
+                                                                            <button
+                                                                                style={{ ...styles.smallBtn, padding: "6px 12px" }}
                                                                                 onClick={() => iniciarEdicaoPergunta(p)}
                                                                                 title="Editar pergunta"
                                                                             >
                                                                                 ✏️
                                                                             </button>
-                                                                            <button 
-                                                                                style={{ ...styles.removeBtn, padding: "6px 12px" }} 
+                                                                            <button
+                                                                                style={{ ...styles.removeBtn, padding: "6px 12px" }}
                                                                                 onClick={() => deletarPergunta(m.id, p.id)}
                                                                                 title="Deletar pergunta"
                                                                             >
@@ -308,7 +389,7 @@ export default function ListarModelos() {
                                         </td>
                                     </tr>
                                 )}
-                            </>
+                            </React.Fragment>
                         ))}
                         </tbody>
                     </table>
@@ -326,11 +407,11 @@ const styles = {
     buttonSecondary: { padding: "8px 12px", borderRadius: 8, border: "none", background: "#444", color: "#fff", cursor: "pointer" },
     smallBtn: { padding: "6px 10px", borderRadius: 6, border: "none", background: "#0077cc", color: "#fff", cursor: "pointer" },
     removeBtn: { padding: "6px 10px", borderRadius: 6, border: "none", background: "#b00", color: "#fff", cursor: "pointer" },
-    input: { 
-        padding: "8px 12px", 
-        borderRadius: 6, 
-        border: "1px solid #444", 
-        background: "#222", 
+    input: {
+        padding: "8px 12px",
+        borderRadius: 6,
+        border: "1px solid #444",
+        background: "#222",
         color: "#fff",
         outline: "none",
         fontSize: 14

@@ -16,7 +16,7 @@ public interface PesquisaRepository extends JpaRepository<Pesquisa, Long> {
     List<Pesquisa> findByDataInicioLessThanEqualAndDataFinalGreaterThanEqual(LocalDate dataInicio,
                                                                              LocalDate dataFinal);
 
-    List<Pesquisa> findByDataInicio(LocalDate dataInicio);
+    List<Pesquisa> findByDataInicioGreaterThanEqual(LocalDate dataInicio);
 
-    List<Pesquisa> findByDataFinal(LocalDate dataFinal);
+    List<Pesquisa> findByDataFinalLessThanEqual(LocalDate dataFinal);
 }

@@ -46,10 +46,16 @@ public class PesquisaService {
         if (nome == null || nome.trim().isEmpty()) return null;
         if (modeloId == null || dataInicio == null || dataFinal == null) return null;
         if (dataFinal.isBefore(dataInicio)) return null;
+        LocalDate hoje = LocalDate.now();
+        if (dataInicio.isBefore(hoje) && dataFinal.isBefore(hoje)) {
+            return null;
+        }
 
         Modelo modelo = modeloRepository.findById(modeloId).orElse(null);
         if (modelo == null) return null;
-
+        if (modelo.getPerguntas() == null || modelo.getPerguntas().isEmpty()) {
+            return null;
+        }
         // owner pode ser null por enquanto
         Pesquisa pesquisa = new Pesquisa(nome, modelo, dataInicio, dataFinal, null);
         return pesquisaRepository.save(pesquisa);
@@ -115,6 +121,13 @@ public class PesquisaService {
     }
 
     // -----------------------------------------------------------------
+    // READ - listar todas as pesquisas
+    // -----------------------------------------------------------------
+
+    public List<Pesquisa> listarTodas() {
+        return pesquisaRepository.findAll();
+    }
+    // -----------------------------------------------------------------
     // READ - listar pesquisas ativas hoje
     // -----------------------------------------------------------------
     public List<Pesquisa> listarPesquisasAtivasHoje() {
@@ -125,13 +138,11 @@ public class PesquisaService {
 
     public List<Pesquisa> listarPesquisasPorDataInicio(LocalDate data) {
         if (data == null) return List.of();
-        return pesquisaRepository.findByDataInicio(data);
-    }
+        return pesquisaRepository.findByDataInicioGreaterThanEqual(data);    }
 
     public List<Pesquisa> listarPesquisasPorDataFinal(LocalDate data) {
         if (data == null) return List.of();
-        return pesquisaRepository.findByDataFinal(data);
-    }
+        return pesquisaRepository.findByDataFinalLessThanEqual(data);    }
 
     // -----------------------------------------------------------------
     // RESPONDER PESQUISA - agora usando RespondenteService
