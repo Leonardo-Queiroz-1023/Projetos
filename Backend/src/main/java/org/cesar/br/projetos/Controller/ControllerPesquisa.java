@@ -184,33 +184,38 @@ public class ControllerPesquisa {
     public ResponseEntity<?> responder(
             @PathVariable Long pesquisaId,
             @RequestBody Map<String, Object> body) {
+    
         try {
-            Object respondenteIdObj = body.get("respondenteId");
-            if (respondenteIdObj == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "ID do respondente obrigatório."));
+            // Validar respondenteId
+            Object respIdObj = body.get("respondenteId");
+            if (respIdObj == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "respondenteId ausente"));
             }
-            Long respondenteId = Long.valueOf(respondenteIdObj.toString());
+            Long respondenteId = Long.valueOf(respIdObj.toString());
 
-            Map<String, String> respostasRaw = (Map<String, String>) body.get("respostas");
-
-            if (respostasRaw == null || respostasRaw.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Nenhuma resposta enviada."));
-            }
-
-            Map<Long, String> respostasConvertidas = new HashMap<>();
-            for (Map.Entry<String, String> entry : respostasRaw.entrySet()) {
-                respostasConvertidas.put(Long.valueOf(entry.getKey()), entry.getValue());
+            // Validar respostas
+            Object respostasObj = body.get("respostas");
+            if (!(respostasObj instanceof Map)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "respostas inválidas"));
             }
 
-            boolean sucesso = pesquisaService.responderPesquisa(pesquisaId, respondenteId, respostasConvertidas);
+            Map<Long, String> respostasMap = new HashMap<>();
+            ((Map<?, ?>) respostasObj).forEach((k, v) -> {
+                respostasMap.put(Long.valueOf(k.toString()), v.toString());
+            });
 
-            if (sucesso) {
-                return ResponseEntity.ok(Map.of("message", "Pesquisa respondida com sucesso!"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "Falha ao responder. Verifique se o respondente já respondeu ou se a pesquisa está fora do prazo."));
+            boolean ok = pesquisaService.responderPesquisa(pesquisaId, respondenteId, respostasMap);
+            
+            if (ok) {
+                return ResponseEntity.ok(Map.of("message", "Sucesso"));
             }
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Falha ao responder. Verifique se o respondente já respondeu ou se a pesquisa está fora do prazo."
+            ));
+            
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Dados inválidos: " + e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Erro interno: " + e.getMessage()));
         }
     }
 

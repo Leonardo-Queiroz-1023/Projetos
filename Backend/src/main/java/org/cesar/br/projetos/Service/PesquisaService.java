@@ -145,46 +145,59 @@ public class PesquisaService {
     // -----------------------------------------------------------------
     // RESPONDER PESQUISA
     // -----------------------------------------------------------------
-    public boolean responderPesquisa(Long pesquisaId,
-                                     Long respondenteId,
-                                     Map<Long, String> respostasUsuario) {
+    public boolean responderPesquisa(Long pesquisaId, Long respondenteId, Map<Long, String> respostas) {
+        System.out.println("=== INÍCIO responderPesquisa ===");
+        System.out.println("pesquisaId: " + pesquisaId);
+        System.out.println("respondenteId: " + respondenteId);
+        System.out.println("respostas recebidas: " + respostas.size());
 
-        if (pesquisaId == null || respondenteId == null) return false;
-        if (respostasUsuario == null || respostasUsuario.isEmpty()) return false;
-
+        // 1. Buscar pesquisa
         Pesquisa pesquisa = pesquisaRepository.findById(pesquisaId).orElse(null);
-        Respondente respondente = respondenteService.buscarPorId(respondenteId);
+        if (pesquisa == null) {
+            System.err.println("❌ Pesquisa não encontrada: " + pesquisaId);
+            return false;
+        }
+        System.out.println("✅ Pesquisa encontrada: " + pesquisa.getNome());
 
-        if (pesquisa == null || respondente == null) return false;
-
-        // Verifica se está no período de resposta
+        // 2. Verificar período
         LocalDate hoje = LocalDate.now();
         if (hoje.isBefore(pesquisa.getDataInicio()) || hoje.isAfter(pesquisa.getDataFinal())) {
+            System.err.println("❌ Pesquisa fora do período. Início: " + pesquisa.getDataInicio() + ", Fim: " + pesquisa.getDataFinal() + ", Hoje: " + hoje);
             return false;
         }
+        System.out.println("✅ Pesquisa dentro do período");
 
-        // Cria a submissão (Permite criar várias para o mesmo respondente)
-        PesquisaRespondida pesquisaRespondida = new PesquisaRespondida(pesquisa, respondente);
-
-        // Monta as respostas
-        respostasUsuario.forEach((perguntaId, texto) -> {
-            if (perguntaId != null && texto != null && !texto.trim().isEmpty()) {
-                perguntaRepository.findById(perguntaId).ifPresent(pergunta -> {
-                    Resposta resposta = new Resposta(texto, pergunta, pesquisaRespondida);
-                    pesquisaRespondida.getRespostas().add(resposta);
-                });
-            }
-        });
-
-        if (pesquisaRespondida.getRespostas().isEmpty()) {
+        // 3. Buscar respondente
+        Respondente respondente = respondenteService.buscarPorId(respondenteId);
+        if (respondente == null) {
+            System.err.println("❌ Respondente não encontrado: " + respondenteId);
             return false;
         }
+        System.out.println("✅ Respondente encontrado: " + respondente.getEmail());
 
-        pesquisaRespondida.setRespondida(true);
-        pesquisaRespondida.setHorarioResposta(LocalDateTime.now());
+        // 4. Verificar se já respondeu
+        boolean jaRespondeu = pesquisaRespondidaRepository.existsByPesquisaIdAndRespondenteId(pesquisaId, respondenteId);
+        if (jaRespondeu) {
+            System.err.println("❌ Respondente já respondeu esta pesquisa");
+            return false;
+        }
+        System.out.println("✅ Respondente ainda não respondeu");
 
-        pesquisaRespondidaRepository.save(pesquisaRespondida);
-        return true;
+        // 5. Salvar respostas
+        try {
+            PesquisaRespondida pr = new PesquisaRespondida();
+            pr.setPesquisa(pesquisa);
+            pr.setRespondente(respondente);
+            pr.setDataResposta(LocalDateTime.now());
+            pr.setRespostas(respostas);
+            pesquisaRespondidaRepository.save(pr);
+            System.out.println("✅ Respostas salvas com sucesso!");
+            return true;
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao salvar: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean respondenteJaRespondeu(Long pesquisaId, Long respondenteId) {
