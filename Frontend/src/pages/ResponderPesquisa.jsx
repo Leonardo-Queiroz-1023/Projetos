@@ -14,11 +14,14 @@ export default function ResponderPesquisa() {
     const [loading, setLoading] = useState(true);
     const [enviando, setEnviando] = useState(false);
     const [enviado, setEnviado] = useState(false);
+
     const [erro, setErro] = useState(null);
+    const [detalheErro, setDetalheErro] = useState("");
 
     useEffect(() => {
         if (!pesquisaId || !respondenteId) {
-            setErro("Link inválido. Identificação incompleta na URL.");
+            setErro("Link incompleto.");
+            setDetalheErro("Os IDs não chegaram na página. Verifique o link no e-mail.");
             setLoading(false);
             return;
         }
@@ -28,26 +31,38 @@ export default function ResponderPesquisa() {
     async function carregarDados() {
         try {
             setLoading(true);
+            setErro(null);
 
             const dadosPesquisa = await api.getPesquisaById(pesquisaId);
             setPesquisa(dadosPesquisa);
 
-            if (dadosPesquisa.modeloId) {
+            if (dadosPesquisa && dadosPesquisa.modeloId) {
+                if (!api.getModeloById) throw new Error("Função api.getModeloById não encontrada.");
+
                 const dadosModelo = await api.getModeloById(dadosPesquisa.modeloId);
 
-                const listaPerguntas = dadosModelo.perguntas || dadosModelo.modelo?.perguntas || [];
+                const listaPerguntas = dadosModelo.perguntas || (dadosModelo.modelo && dadosModelo.modelo.perguntas) || [];
+
                 if (listaPerguntas.length === 0) {
-                    setErro("Este modelo não possui perguntas cadastradas.");
+                    setErro("O modelo desta pesquisa está vazio (sem perguntas).");
                 } else {
                     setPerguntas(listaPerguntas);
                 }
             } else {
-                setErro("Esta pesquisa não possui um modelo vinculado.");
+                setErro("Pesquisa sem modelo vinculado.");
             }
 
         } catch (e) {
-            console.error("Erro ao carregar:", e);
-            setErro("Não foi possível carregar a pesquisa. O link pode ter expirado ou você não tem permissão.");
+            console.error(e);
+
+            let msg = "Erro desconhecido.";
+            if (e.response && e.response.status === 404) msg = "Pesquisa ou Modelo não encontrados (404).";
+            else if (e.response && e.response.status === 403) msg = "Acesso negado ao Modelo (403).";
+            else if (e.message === "Network Error") msg = "Erro de conexão. O Backend (Java) está rodando?";
+            else msg = e.message || JSON.stringify(e);
+
+            setErro("Falha ao carregar a pesquisa.");
+            setDetalheErro(msg);
         } finally {
             setLoading(false);
         }
@@ -63,7 +78,7 @@ export default function ResponderPesquisa() {
     async function handleEnviar() {
         const faltantes = perguntas.filter((p) => !respostas[p.id]);
         if (faltantes.length > 0) {
-            alert(`Faltam responder ${faltantes.length} perguntas.`);
+            alert(`Responda todas as perguntas. Faltam: ${faltantes.length}`);
             return;
         }
 
@@ -73,8 +88,8 @@ export default function ResponderPesquisa() {
             setEnviado(true);
         } catch (error) {
             console.error(error);
-            const msg = error.response?.data?.error || error.message || "Erro desconhecido.";
-            alert("Erro ao enviar: " + msg);
+            const msg = error.response?.data?.error || error.message || "Erro ao enviar.";
+            alert("Erro: " + msg);
         } finally {
             setEnviando(false);
         }
@@ -83,9 +98,18 @@ export default function ResponderPesquisa() {
     if (erro) {
         return (
             <div style={styles.container}>
-                <PerimeterBox style={{ padding: 40, textAlign: "center", color: "red" }}>
-                    <h3>❌ Ocorreu um erro</h3>
-                    <p>{erro}</p>
+                <PerimeterBox style={{ padding: 40, textAlign: "center", border: "1px solid red" }}>
+                    <h3 style={{color: "#d8000c"}}>❌ Ocorreu um erro</h3>
+                    <p style={{fontWeight: "bold", margin: "10px 0"}}>{erro}</p>
+
+                    <div style={{background: "#eee", padding: 15, borderRadius: 5, fontSize: "0.85rem", textAlign: "left", color: "#333"}}>
+                        <strong>Diagnóstico Técnico:</strong><br/>
+                        {detalheErro}
+                    </div>
+
+                    <button onClick={() => window.location.reload()} style={{marginTop: 20, background:"none", border:"none", textDecoration:"underline", cursor:"pointer", color:"#007bff"}}>
+                        Tentar novamente
+                    </button>
                 </PerimeterBox>
             </div>
         );
@@ -97,22 +121,17 @@ export default function ResponderPesquisa() {
                 <PerimeterBox style={{ padding: 60, textAlign: "center", maxWidth: "500px" }}>
                     <div style={{ fontSize: "60px", marginBottom: "20px" }}>✅</div>
                     <h2>Respostas Recebidas!</h2>
-                    <p style={{ color: "#666" }}>Obrigado por sua participação.</p>
+                    <p style={{ color: "#666", marginBottom: 30 }}>Suas respostas foram salvas com sucesso.</p>
                 </PerimeterBox>
             </div>
         );
     }
 
-    if (loading) {
-        return <div style={styles.container}>⏳ Carregando pesquisa...</div>;
-    }
-
-    if (perguntas.length === 0) {
-        return <div style={styles.container}>Nenhuma pergunta encontrada.</div>;
-    }
+    if (loading) return <div style={styles.container}>⏳ Carregando pesquisa...</div>;
+    if (perguntas.length === 0) return <div style={styles.container}>Nenhuma pergunta encontrada.</div>;
 
     const pergunta = perguntas[perguntaAtual];
-    const total = perguntas.length || 1;
+    const total = perguntas.length;
     const progresso = ((perguntaAtual + 1) / total) * 100;
     const respostaAtual = respostas[pergunta.id];
 
@@ -125,11 +144,11 @@ export default function ResponderPesquisa() {
 
                 <div style={{ padding: "30px" }}>
                     <div style={{ marginBottom: 20, color: "#888", fontSize: "0.9rem" }}>
-                        {pesquisa.nome} • {perguntaAtual + 1} de {perguntas.length}
+                        {pesquisa.nome} • {perguntaAtual + 1} de {total}
                     </div>
 
                     <h2 style={{ fontSize: "1.5rem", marginBottom: "30px", color: "#222" }}>
-                        {pergunta.questao || pergunta.texto || "Pergunta sem texto"}
+                        {pergunta.texto || pergunta.questao || "Pergunta"}
                     </h2>
 
                     <div style={styles.optionsGrid}>
@@ -162,7 +181,7 @@ export default function ResponderPesquisa() {
                             ⬅ Anterior
                         </button>
 
-                        {perguntaAtual === perguntas.length - 1 ? (
+                        {perguntaAtual === total - 1 ? (
                             <button onClick={handleEnviar} disabled={enviando} style={styles.actionBtn}>
                                 {enviando ? "Enviando..." : "Finalizar 🚀"}
                             </button>
@@ -182,7 +201,7 @@ const styles = {
     container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", padding: 20, fontFamily: "sans-serif" },
     optionsGrid: { display: "flex", gap: 10, justifyContent: "center", marginBottom: 10 },
     optionBtn: { width: 50, height: 50, borderRadius: "50%", border: "1px solid #ccc", cursor: "pointer", fontSize: 18, fontWeight: "bold", transition: "all 0.2s" },
-    footer: { marginTop: 40, paddingTop: 20, borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between" },
+    footer: { marginTop: 40, paddingTop: 20, borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" },
     navBtn: { background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: 14, fontWeight: 600 },
     actionBtn: { background: "#000", color: "#fff", border: "none", padding: "10px 24px", borderRadius: 6, cursor: "pointer", fontWeight: 600, fontSize: 14 },
 };
