@@ -49,22 +49,23 @@ export default function LancarPesquisas() {
                         <p style={{ color: "#666" }}>📭 Nenhuma pesquisa encontrada para envio.</p>
                     ) : (
                         pesquisas.map((pesquisa) => (
-                            <div 
-                                key={pesquisa.id} 
-                                style={{ 
-                                    border: "2px solid #000", 
-                                    borderRadius: "8px", 
-                                    padding: "16px", 
-                                    marginBottom: "16px", 
-                                    background: "#fff" 
+                            <div
+                                key={pesquisa.id}
+                                style={{
+                                    border: "2px solid #000",
+                                    borderRadius: "8px",
+                                    padding: "16px",
+                                    marginBottom: "16px",
+                                    background: "#fff"
                                 }}
                             >
-                                <h3 style={{ marginBottom: 8 }}>{pesquisa.nome || "Sem nome"}</h3>
+                                <h3 style={{ marginBottom: 8, color: "#555" }}>{pesquisa.nome || "Sem nome"}</h3>
                                 <p style={{ marginBottom: 10, color: "#555" }}>
-                                    Início: {pesquisa.dataInicio ? new Date(pesquisa.dataInicio).toLocaleDateString() : "Sem data"}
+                                    Início: {pesquisa.dataInicio ? new Date(pesquisa.dataInicio).toLocaleDateString() : "Sem data"} -
+                                    Fim: {pesquisa.dataFinal ? new Date(pesquisa.dataFinal).toLocaleDateString() : "Sem data"}
                                 </p>
-                                <button 
-                                    style={{ ...btn, width: "100%", background: "#007bff" }} 
+                                <button
+                                    style={{ ...btn, width: "100%", background: "#007bff" }}
                                     onClick={() => navigate(`/disparar-pesquisa/${pesquisa.id}`)}
                                 >
                                     Enviar ➔
