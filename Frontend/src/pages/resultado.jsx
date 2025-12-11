@@ -6,14 +6,17 @@ import api from "../services/api";
 export default function PesquisasAndamento() {
     const navigate = useNavigate();
 
+    // Estado dos dados
     const [pesquisas, setPesquisas] = useState([]);
     const [modelos, setModelos] = useState([]);
+
+    // Estados dos filtros
     const [tipoFiltro, setTipoFiltro] = useState("TODAS");
     const [modeloSelecionado, setModeloSelecionado] = useState("");
     const [dataSelecionada, setDataSelecionada] = useState("");
+
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState(null);
-
     const logged = localStorage.getItem("logged") === "true";
 
     useEffect(() => {
@@ -80,99 +83,150 @@ export default function PesquisasAndamento() {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         const fim = new Date(dataFim + "T23:59:59");
-        return fim >= hoje ? "Em andamento" : "Encerrada";
+        return fim >= hoje ?
+            <span style={{ color: "#4f4" }}>Em andamento</span> :
+            <span style={{ color: "#f55" }}>Encerrada</span>;
     };
-
     if (!logged) return null;
-
     return (
-        <div style={{ minHeight: "calc(100vh - 50px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif" }}>
-            <PerimeterBox style={{ textAlign: "center", width: "900px", maxWidth: "95vw" }}>
-                <h1 style={{ marginBottom: 20 }}>📊 Consultar Pesquisas</h1>
+        <div style={outer}>
+            <PerimeterBox style={{ width: "1000px", padding: 0 }}>
+                <div style={blackCard}>
+                    <h2 style={title}>Consultar Pesquisas</h2>
 
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 20 }}>
-                    <select
-                        value={tipoFiltro}
-                        onChange={(e) => { setTipoFiltro(e.target.value); setErro(null); }}
-                        style={selectStyle}
-                    >
-                        <option value="TODAS">Todas as Pesquisas</option>
-                        <option value="ATIVAS">Apenas Ativas</option>
-                        <option value="MODELO">Por Modelo</option>
-                        <option value="DATA_INICIO">Por Data de Início</option>
-                        <option value="DATA_FINAL">Por Data de Fim</option>
-                    </select>
+                    <div style={filterArea}>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
 
-                    {tipoFiltro === "MODELO" && (
-                        <select value={modeloSelecionado} onChange={(e) => setModeloSelecionado(e.target.value)} style={selectStyle}>
-                            {modelos.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
-                        </select>
-                    )}
+                            <div style={filterGroup}>
+                                <label style={label}>Buscar por:</label>
+                                <select
+                                    value={tipoFiltro}
+                                    onChange={(e) => {
+                                        setTipoFiltro(e.target.value);
+                                        setErro(null);
+                                    }}
+                                    style={select}
+                                >
+                                    <option value="TODAS">Todas as Pesquisas</option>
+                                    <option value="ATIVAS">Apenas Ativas (Hoje)</option>
+                                    <option value="MODELO">Por Modelo</option>
+                                    <option value="DATA_INICIO">Por Data de Início</option>
+                                    <option value="DATA_FINAL">Por Data de Fim</option>
+                                </select>
+                            </div>
 
-                    {(tipoFiltro === "DATA_INICIO" || tipoFiltro === "DATA_FINAL") && (
-                        <input type="date" value={dataSelecionada} onChange={(e) => setDataSelecionada(e.target.value)} style={selectStyle} />
-                    )}
+                            {tipoFiltro === "MODELO" && (
+                                <div style={filterGroup}>
+                                    <label style={label}>Selecione o Modelo:</label>
+                                    <select
+                                        value={modeloSelecionado}
+                                        onChange={(e) => setModeloSelecionado(e.target.value)}
+                                        style={select}
+                                    >
+                                        {modelos.map(m => (
+                                            <option key={m.id} value={m.id}>{m.nome}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
-                    <button onClick={buscarPesquisas} style={btn} disabled={loading}>
-                        {loading ? "⏳" : "🔍"} Buscar
-                    </button>
+                            {(tipoFiltro === "DATA_INICIO" || tipoFiltro === "DATA_FINAL") && (
+                                <div style={filterGroup}>
+                                    <label style={label}>Selecione a Data:</label>
+                                    <input
+                                        type="date"
+                                        value={dataSelecionada}
+                                        onChange={(e) => setDataSelecionada(e.target.value)}
+                                        style={input}
+                                    />
+                                </div>
+                            )}
 
-                    <button style={{ ...btn, background: "#444" }} onClick={() => navigate("/menu-central")}>
+                            <button onClick={buscarPesquisas} style={searchBtn}>
+                                🔍 Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style={listBox}>
+                        {loading && <p style={{ padding: 20, textAlign: "center" }}>⏳ Carregando...</p>}
+                        {erro && <p style={{ padding: 20, color: "#f55", textAlign: "center" }}>⚠️ {erro}</p>}
+
+                        {!loading && !erro && pesquisas.length === 0 && (
+                            <p style={{ padding: 20, textAlign: "center", color: "#666" }}>Nenhuma pesquisa encontrada.</p>
+                        )}
+
+                        {!loading && pesquisas.length > 0 && (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                <tr style={{ borderBottom: '1px solid #333', color: '#888' }}>
+                                    <th style={th}>Nome</th>
+                                    <th style={th}>Modelo</th>
+                                    <th style={th}>Início</th>
+                                    <th style={th}>Fim</th>
+                                    <th style={th}>Status</th>
+                                    <th style={th}>Ação</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {pesquisas.map((p) => (
+                                    <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+                                        <td style={td}><strong>{p.nome}</strong></td>
+                                        <td style={td}>
+                                            {/* Lógica segura para exibir o nome do modelo */}
+                                            {p.modeloNome || (p.modelo && p.modelo.nome ? p.modelo.nome : (p.modeloId ? "Mod. " + p.modeloId : "-"))}
+                                        </td>
+                                        <td style={td}>{new Date(p.dataInicio).toLocaleDateString()}</td>
+                                        <td style={td}>{new Date(p.dataFinal).toLocaleDateString()}</td>
+                                        <td style={td}>{getStatus(p.dataFinal)}</td>
+                                        <td style={td}>
+                                            <div style={{ display: 'flex', gap: 8 }}>
+
+                                                {/* --- BOTÃO ATUALIZADO: VISUALIZAR --- */}
+                                                <button
+                                                    onClick={() => navigate(`/pesquisas/visualizar/${p.id}`)}
+                                                    style={{ ...actionBtn, background: "#0077cc" }}
+                                                    title="Ver detalhes da pesquisa"
+                                                >
+                                                    👁️ Ver
+                                                </button>
+
+                                                <button
+                                                    onClick={() => navigate(`/resultados/`)}
+                                                    style={actionBtn}
+                                                >
+                                                    📊 Resultados
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+
+                    <button style={backBtn} onClick={() => navigate("/pesquisas")}>
                         Voltar
                     </button>
-                </div>
-
-                {erro && <p style={{ color: "red", marginTop: 10 }}>❌ {erro}</p>}
-
-                <div style={{ marginTop: 20, textAlign: "left" }}>
-                    {pesquisas.length === 0 ? (
-                        <p style={{ color: "#666", textAlign: "center" }}>📭 Nenhuma pesquisa encontrada.</p>
-                    ) : (
-                        pesquisas.map((p) => (
-                            <div key={p.id} style={{ border: "2px solid #000", borderRadius: "8px", padding: "16px", marginBottom: "16px", background: "#fff" }}>
-                                <h3 style={{ marginBottom: 8 }}>{p.nome}</h3>
-                                <p style={{ marginBottom: 8, color: "#555", fontSize: 14 }}>
-                                    Modelo: {p.modeloNome || (p.modelo?.nome) || "-"}
-                                </p>
-                                <p style={{ marginBottom: 8, color: "#555", fontSize: 14 }}>
-                                    Início: {new Date(p.dataInicio).toLocaleDateString()} • Fim: {new Date(p.dataFinal).toLocaleDateString()}
-                                </p>
-                                <p style={{ marginBottom: 10, color: "#555", fontSize: 14 }}>
-                                    Status: <strong>{getStatus(p.dataFinal)}</strong>
-                                </p>
-                                <div style={{ display: "flex", gap: 10 }}>
-                                    <button style={{ ...btn, width: "auto", background: "#0077cc" }} onClick={() => navigate(`/pesquisas/visualizar/${p.id}`)}>
-                                        👁️ Ver
-                                    </button>
-                                    <button style={{ ...btn, width: "auto" }} onClick={() => navigate(`/resultados/`)}>
-                                        📊 Resultados
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    )}
                 </div>
             </PerimeterBox>
         </div>
     );
 }
 
-const btn = {
-    width: "200px",
-    padding: "10px 16px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    background: "#000",
-    color: "#fff",
-    margin: "0 auto",
-};
-
-const selectStyle = {
-    padding: "10px 16px",
-    borderRadius: "8px",
-    border: "1px solid #444",
-    background: "#222",
-    color: "#fff",
-    minWidth: "150px",
-};
+// Estilos
+const outer = { minHeight: "calc(100vh - 50px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif", padding: 20 };
+const blackCard = { background: "#0b0b0b", borderRadius: 18, padding: 24, color: "#fff", minHeight: 400 };
+const title = { textAlign: "center", margin: "0 0 20px 0", fontSize: 20 };
+const filterArea = { background: "#151515", padding: 15, borderRadius: 8, marginBottom: 20, border: "1px solid #333" };
+const filterGroup = { display: "flex", flexDirection: "column", gap: 5 };
+const label = { fontSize: 12, color: "#aaa", fontWeight: "bold" };
+const select = { padding: "8px 12px", borderRadius: 6, border: "1px solid #444", background: "#222", color: "#fff", minWidth: 150 };
+const input = { padding: "8px 12px", borderRadius: 6, border: "1px solid #444", background: "#222", color: "#fff" };
+const searchBtn = { padding: "10px 20px", background: "#1ea8ff", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: "bold", marginTop: 18 };
+const listBox = { background: "#111", borderRadius: 8, padding: "10px", minHeight: 200 };
+const th = { padding: 10, textAlign: 'left', fontSize: 13 };
+const td = { padding: 10, fontSize: 14 };
+const actionBtn = { padding: "6px 12px", background: "#333", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 12 };
+const backBtn = { marginTop: 20, padding: "8px 18px", background: "#f4b7ac", color: "#1a1a1a", border: "none", borderRadius: 6, cursor: "pointer", display: "block", margin: "20px auto 0" };
