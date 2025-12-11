@@ -88,8 +88,15 @@ export default function ResponderPesquisa() {
             setEnviado(true);
         } catch (error) {
             console.error(error);
-            const msg = error.response?.data?.error || error.message || "Erro ao enviar.";
-            alert("Erro: " + msg);
+            // Verifica se é erro de período
+            const msgOriginal = error.body?.error || error.message || "Erro ao enviar.";
+            let msg = msgOriginal;
+            
+            if (msgOriginal.toLowerCase().includes("prazo") || msgOriginal.toLowerCase().includes("período") || msgOriginal.toLowerCase().includes("fora")) {
+                msg = `Pesquisa fora do período de resposta.\n\nInício: ${pesquisa.dataInicio || "?"}\nFim: ${pesquisa.dataFinal || "?"}.`;
+            }
+            
+            alert("Erro ao enviar: " + msg);
         } finally {
             setEnviando(false);
         }

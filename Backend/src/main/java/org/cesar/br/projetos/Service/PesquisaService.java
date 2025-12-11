@@ -146,7 +146,10 @@ public class PesquisaService {
     // -----------------------------------------------------------------
     // RESPONDER PESQUISA
     // -----------------------------------------------------------------
-    public boolean responderPesquisa(Long pesquisaId,
+    /**
+     * Retorna null se sucesso, ou uma String com o motivo do erro.
+     */
+    public String responderPesquisa(Long pesquisaId,
                                      Long respondenteId,
                                      Map<Long, String> respostasUsuario) {
 
@@ -155,11 +158,11 @@ public class PesquisaService {
 
         if (pesquisaId == null || respondenteId == null) {
             System.err.println("FALHA: pesquisaId ou respondenteId é null");
-            return false;
+            return "IDs inválidos";
         }
         if (respostasUsuario == null || respostasUsuario.isEmpty()) {
             System.err.println("FALHA: respostasUsuario é null ou vazio");
-            return false;
+            return "Nenhuma resposta enviada";
         }
         System.out.println("Respostas recebidas: " + respostasUsuario.size());
 
@@ -168,11 +171,11 @@ public class PesquisaService {
 
         if (pesquisa == null) {
             System.err.println("FALHA: Pesquisa não encontrada com id=" + pesquisaId);
-            return false;
+            return "Pesquisa não encontrada";
         }
         if (respondente == null) {
             System.err.println("FALHA: Respondente não encontrado com id=" + respondenteId);
-            return false;
+            return "Respondente não encontrado";
         }
         System.out.println("Pesquisa: " + pesquisa.getNome() + ", Respondente: " + respondente.getEmail());
 
@@ -181,7 +184,7 @@ public class PesquisaService {
         System.out.println("Data hoje (SP): " + hoje + ", Inicio: " + pesquisa.getDataInicio() + ", Fim: " + pesquisa.getDataFinal());
         if (hoje.isBefore(pesquisa.getDataInicio()) || hoje.isAfter(pesquisa.getDataFinal())) {
             System.err.println("FALHA: Pesquisa fora do período");
-            return false;
+            return "Pesquisa fora do período. Início: " + pesquisa.getDataInicio() + ", Fim: " + pesquisa.getDataFinal();
         }
 
         // Cria a submissão (Permite criar várias para o mesmo respondente)
@@ -199,7 +202,7 @@ public class PesquisaService {
 
         if (pesquisaRespondida.getRespostas().isEmpty()) {
             System.err.println("FALHA: Nenhuma resposta válida foi montada");
-            return false;
+            return "Nenhuma resposta válida foi montada";
         }
 
         pesquisaRespondida.setRespondida(true);
@@ -208,11 +211,11 @@ public class PesquisaService {
         try {
             pesquisaRespondidaRepository.save(pesquisaRespondida);
             System.out.println("SUCESSO: Respostas salvas! Total: " + pesquisaRespondida.getRespostas().size());
-            return true;
+            return null; // null = sucesso
         } catch (Exception e) {
             System.err.println("FALHA ao salvar: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return "Erro ao salvar: " + e.getMessage();
         }
     }
 

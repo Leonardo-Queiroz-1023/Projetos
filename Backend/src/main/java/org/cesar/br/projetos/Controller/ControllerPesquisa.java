@@ -204,14 +204,12 @@ public class ControllerPesquisa {
                 respostasMap.put(Long.valueOf(k.toString()), v.toString());
             });
 
-            boolean ok = pesquisaService.responderPesquisa(pesquisaId, respondenteId, respostasMap);
+            String erro = pesquisaService.responderPesquisa(pesquisaId, respondenteId, respostasMap);
             
-            if (ok) {
+            if (erro == null) {
                 return ResponseEntity.ok(Map.of("message", "Sucesso"));
             }
-            return ResponseEntity.badRequest().body(Map.of(
-                "error", "Falha ao responder. Verifique se o respondente já respondeu ou se a pesquisa está fora do prazo."
-            ));
+            return ResponseEntity.badRequest().body(Map.of("error", erro));
             
         } catch (Exception e) {
             e.printStackTrace();
