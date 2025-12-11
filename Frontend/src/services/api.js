@@ -77,11 +77,14 @@ const api = {
     },
 
     // ⚠️ ALTERADO: Aceita usuarioId opcional. Se não passado, tenta do localStorage.
-    // Se ainda assim for null (usuário externo), envia string vazia ou trata o erro.
+    // Se ainda assim for null (usuário externo), envia 0 para acesso público.
     getModeloById: (id, ownerId = null) => {
-        let usuarioId = ownerId || localStorage.getItem('usuarioId');
+        // Se ownerId foi passado explicitamente (mesmo que seja 0), usa ele
+        let usuarioId = (ownerId !== null && ownerId !== undefined) 
+            ? ownerId 
+            : localStorage.getItem('usuarioId');
 
-        if (!usuarioId) usuarioId = "0";
+        if (!usuarioId && usuarioId !== 0) usuarioId = "0";
 
         return fetchAPI(`/modelos/${id}?usuarioId=${usuarioId}`);
     },
