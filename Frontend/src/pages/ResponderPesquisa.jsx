@@ -39,8 +39,7 @@ export default function ResponderPesquisa() {
             if (dadosPesquisa && dadosPesquisa.modeloId) {
                 if (!api.getModeloById) throw new Error("Função api.getModeloById não encontrada.");
 
-                const dadosModelo = await api.getModeloById(dadosPesquisa.modeloId);
-
+                const dadosModelo = await api.getModeloById(dadosPesquisa.modeloId, 0);
                 const listaPerguntas = dadosModelo.perguntas || (dadosModelo.modelo && dadosModelo.modelo.perguntas) || [];
 
                 if (listaPerguntas.length === 0) {
