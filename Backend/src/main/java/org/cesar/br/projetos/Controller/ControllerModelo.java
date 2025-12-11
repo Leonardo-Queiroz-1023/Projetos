@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -75,7 +77,18 @@ public class ControllerModelo {
             Modelo m = modeloService.buscarModeloPeloIdSemValidacao(id);
 
             if (m != null) {
-                return ResponseEntity.ok(m);
+                // Converte para Map para evitar LazyInitializationException no PostgreSQL
+                Map<String, Object> dto = new HashMap<>();
+                dto.put("id", m.getId());
+                dto.put("nome", m.getNome());
+                dto.put("descricao", m.getDescricao());
+                dto.put("perguntas", m.getPerguntas().stream().map(p -> {
+                    Map<String, Object> pDto = new HashMap<>();
+                    pDto.put("id", p.getId());
+                    pDto.put("questao", p.getQuestao());
+                    return pDto;
+                }).collect(Collectors.toList()));
+                return ResponseEntity.ok(dto);
             } else {
                 return ResponseEntity.status(404).body(Map.of("error", "Modelo público não encontrado!"));
             }

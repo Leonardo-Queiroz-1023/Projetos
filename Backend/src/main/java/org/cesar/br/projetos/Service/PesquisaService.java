@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -149,17 +150,37 @@ public class PesquisaService {
                                      Long respondenteId,
                                      Map<Long, String> respostasUsuario) {
 
-        if (pesquisaId == null || respondenteId == null) return false;
-        if (respostasUsuario == null || respostasUsuario.isEmpty()) return false;
+        System.out.println("=== INICIO responderPesquisa ===");
+        System.out.println("pesquisaId: " + pesquisaId + ", respondenteId: " + respondenteId);
+
+        if (pesquisaId == null || respondenteId == null) {
+            System.err.println("FALHA: pesquisaId ou respondenteId é null");
+            return false;
+        }
+        if (respostasUsuario == null || respostasUsuario.isEmpty()) {
+            System.err.println("FALHA: respostasUsuario é null ou vazio");
+            return false;
+        }
+        System.out.println("Respostas recebidas: " + respostasUsuario.size());
 
         Pesquisa pesquisa = pesquisaRepository.findById(pesquisaId).orElse(null);
         Respondente respondente = respondenteService.buscarPorId(respondenteId);
 
-        if (pesquisa == null || respondente == null) return false;
+        if (pesquisa == null) {
+            System.err.println("FALHA: Pesquisa não encontrada com id=" + pesquisaId);
+            return false;
+        }
+        if (respondente == null) {
+            System.err.println("FALHA: Respondente não encontrado com id=" + respondenteId);
+            return false;
+        }
+        System.out.println("Pesquisa: " + pesquisa.getNome() + ", Respondente: " + respondente.getEmail());
 
-        // Verifica se está no período de resposta
-        LocalDate hoje = LocalDate.now();
+        // Verifica se está no período de resposta (usa timezone de São Paulo para consistência)
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+        System.out.println("Data hoje (SP): " + hoje + ", Inicio: " + pesquisa.getDataInicio() + ", Fim: " + pesquisa.getDataFinal());
         if (hoje.isBefore(pesquisa.getDataInicio()) || hoje.isAfter(pesquisa.getDataFinal())) {
+            System.err.println("FALHA: Pesquisa fora do período");
             return false;
         }
 
@@ -177,14 +198,22 @@ public class PesquisaService {
         });
 
         if (pesquisaRespondida.getRespostas().isEmpty()) {
+            System.err.println("FALHA: Nenhuma resposta válida foi montada");
             return false;
         }
 
         pesquisaRespondida.setRespondida(true);
         pesquisaRespondida.setHorarioResposta(LocalDateTime.now());
 
-        pesquisaRespondidaRepository.save(pesquisaRespondida);
-        return true;
+        try {
+            pesquisaRespondidaRepository.save(pesquisaRespondida);
+            System.out.println("SUCESSO: Respostas salvas! Total: " + pesquisaRespondida.getRespostas().size());
+            return true;
+        } catch (Exception e) {
+            System.err.println("FALHA ao salvar: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean respondenteJaRespondeu(Long pesquisaId, Long respondenteId) {

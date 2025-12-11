@@ -77,7 +77,12 @@ public class ModeloService {
             return null;
         }
         // Busca direta pelo ID, sem filtro de usuário
-        return modeloRepository.findById(id).orElse(null);
+        Modelo m = modeloRepository.findById(id).orElse(null);
+        if (m != null) {
+            // Força inicialização da coleção lazy para evitar LazyInitializationException
+            m.getPerguntas().size();
+        }
+        return m;
     }
 
     // ---------------------------------------------------------------------
