@@ -25,7 +25,6 @@ public class PerguntaService {
     // -------------------------------------------------------------
     public boolean adicionarPergunta(Long modeloId, String textoPergunta) {
 
-        // Validação básica
         if (modeloId == null) {
             return false;
         }
@@ -33,19 +32,15 @@ public class PerguntaService {
             return false;
         }
 
-        // Busca o modelo
         Modelo modelo = modeloRepository.findById(modeloId).orElse(null);
         if (modelo == null) {
             return false;
         }
 
-        // Cria a entidade de domínio já ligada ao modelo
         Pergunta nova = new Pergunta(textoPergunta, modelo);
 
-        // Usa o método utilitário do Modelo para sincronizar os dois lados
         modelo.adicionarPergunta(nova);
 
-        // Persistência (cascade salva a pergunta junto)
         modeloRepository.save(modelo);
         return true;
     }
@@ -84,7 +79,6 @@ public class PerguntaService {
             return false;
         }
 
-        // Procura a pergunta dentro da lista do modelo
         for (Pergunta pergunta : modelo.getPerguntas()) {
             if (pergunta.getId().equals(perguntaId)) {
                 pergunta.setQuestao(novoTexto);
@@ -122,10 +116,8 @@ public class PerguntaService {
             return false;
         }
 
-        // Usa o método utilitário do Modelo, que cuida dos dois lados da relação
         modelo.removerPergunta(alvo);
 
-        // orphanRemoval = true faz o delete em cascata
         modeloRepository.save(modelo);
         return true;
     }

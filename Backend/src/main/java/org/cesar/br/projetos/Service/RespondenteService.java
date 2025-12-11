@@ -27,7 +27,6 @@ public class RespondenteService {
                                         String email,
                                         boolean interagiuTransacaoSebrae) {
 
-        // Se quiser ser mais rígida, pode exigir pelo menos telefone OU email
         if ((telefone == null || telefone.trim().isEmpty())
                 && (email == null || email.trim().isEmpty())) {
             return null;

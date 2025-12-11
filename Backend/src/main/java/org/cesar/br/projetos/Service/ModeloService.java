@@ -25,25 +25,20 @@ public class ModeloService {
     // ---------------------------------------------------------------------
     public Modelo criarModelo(String nome, String descricao, Usuario usuario) {
 
-        // Validação: nome obrigatório
         if (nome == null || nome.trim().isEmpty()) {
             return null;
         }
 
-        // Validação: descrição obrigatória
         if (descricao == null || descricao.trim().isEmpty()) {
             return null;
         }
 
-        // Validação: usuário obrigatório
         if (usuario == null) {
             return null;
         }
 
-        // Criação do modelo (id é gerado pelo banco via @GeneratedValue)
         Modelo modelo = new Modelo(nome, descricao, usuario);
 
-        // Persistência
         return modeloRepository.save(modelo);
     }
 
@@ -54,7 +49,6 @@ public class ModeloService {
         if (usuario == null) {
             return List.of();
         }
-        // assume que o repositório tem o método findByUsuario(Usuario usuario)
         return modeloRepository.findByUsuario(usuario);
     }
 
@@ -65,7 +59,6 @@ public class ModeloService {
         if (id == null || usuario == null) {
             return null;
         }
-        // assume que o repositório tem findByIdAndUsuario(Long id, Usuario usuario)
         return modeloRepository.findByIdAndUsuario(id, usuario).orElse(null);
     }
 
@@ -76,10 +69,8 @@ public class ModeloService {
         if (id == null) {
             return null;
         }
-        // Busca direta pelo ID, sem filtro de usuário
         Modelo m = modeloRepository.findById(id).orElse(null);
         if (m != null) {
-            // Força inicialização da coleção lazy para evitar LazyInitializationException
             m.getPerguntas().size();
         }
         return m;
@@ -93,18 +84,15 @@ public class ModeloService {
                                    String descricao,
                                    Usuario usuario) {
 
-        // Validação: ID e usuário obrigatórios
         if (id == null || usuario == null) {
             return false;
         }
 
-        // Busca o modelo existente (apenas do usuário dono)
         Modelo existente = modeloRepository.findByIdAndUsuario(id, usuario).orElse(null);
         if (existente == null) {
             return false;
         }
 
-        // Atualiza apenas campos não nulos e não vazios
         if (nome != null && !nome.trim().isEmpty()) {
             existente.setNome(nome);
         }
@@ -122,18 +110,15 @@ public class ModeloService {
     // ---------------------------------------------------------------------
     public boolean deletarModelo(Long id, Usuario usuario) {
 
-        // Validação: ID e usuário obrigatórios
         if (id == null || usuario == null) {
             return false;
         }
 
-        // Verifica se o modelo existe e pertence ao usuário
         Modelo modelo = modeloRepository.findByIdAndUsuario(id, usuario).orElse(null);
         if (modelo == null) {
             return false;
         }
 
-        // Deleção
         modeloRepository.delete(modelo);
         return true;
     }

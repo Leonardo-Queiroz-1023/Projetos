@@ -14,7 +14,7 @@ public class EmailService {
     public void enviarEmail(String para, String assunto, String texto) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("testeprojetos222@gmail.com"); // Quem está enviando (mesmo do properties)
+            message.setFrom("testeprojetos222@gmail.com"); 
             message.setTo(para);
             message.setSubject(assunto);
             message.setText(texto);
