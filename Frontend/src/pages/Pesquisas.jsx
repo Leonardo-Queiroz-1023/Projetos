@@ -1,6 +1,7 @@
 // src/pages/Pesquisas.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PerimeterBox from "../components/PerimeterBox";
 
 export default function Pesquisas() {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Pesquisas() {
                 fontFamily: "sans-serif",
             }}
         >
-            <div style={{ textAlign: "center" }}>
+            <PerimeterBox style={{ textAlign: "center", width: "520px" }}>
                 <h1 style={{ marginBottom: 20 }}>Pesquisas</h1>
                 <p style={{ marginBottom: 25 }}>
                     Selecione uma opção:
@@ -39,14 +40,12 @@ export default function Pesquisas() {
                         ➕ Criar Nova Pesquisa
                     </button>
 
-                    {/* --- NOVO BOTÃO ADICIONADO --- */}
                     <button
                         style={btn}
                         onClick={() => navigate("/lancar-pesquisas")}
                     >
                         🚀 Lançar Pesquisa
                     </button>
-                    {/* ----------------------------- */}
 
                     <button
                         style={btn}
@@ -66,7 +65,7 @@ export default function Pesquisas() {
                         Voltar ao menu
                     </button>
                 </div>
-            </div>
+            </PerimeterBox>
         </div>
     );
 }
